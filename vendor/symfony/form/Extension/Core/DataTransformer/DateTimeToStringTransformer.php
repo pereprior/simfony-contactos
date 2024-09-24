@@ -23,10 +23,8 @@ class DateTimeToStringTransformer extends BaseDateTimeTransformer
 {
     /**
      * Format used for generating strings.
-     *
-     * @var string
      */
-    private $generateFormat;
+    private string $generateFormat;
 
     /**
      * Format used for parsing strings.
@@ -34,10 +32,8 @@ class DateTimeToStringTransformer extends BaseDateTimeTransformer
      * Different than the {@link $generateFormat} because formats for parsing
      * support additional characters in PHP that are not supported for
      * generating strings.
-     *
-     * @var string
      */
-    private $parseFormat;
+    private string $parseFormat;
 
     /**
      * Transforms a \DateTime instance to a string.
@@ -75,11 +71,9 @@ class DateTimeToStringTransformer extends BaseDateTimeTransformer
      *
      * @param \DateTimeInterface $dateTime A DateTimeInterface object
      *
-     * @return string A value as produced by PHP's date() function
-     *
      * @throws TransformationFailedException If the given value is not a \DateTimeInterface
      */
-    public function transform($dateTime)
+    public function transform(mixed $dateTime): string
     {
         if (null === $dateTime) {
             return '';
@@ -103,12 +97,10 @@ class DateTimeToStringTransformer extends BaseDateTimeTransformer
      *
      * @param string $value A value as produced by PHP's date() function
      *
-     * @return \DateTime|null An instance of \DateTime
-     *
      * @throws TransformationFailedException If the given value is not a string,
      *                                       or could not be transformed
      */
-    public function reverseTransform($value)
+    public function reverseTransform(mixed $value): ?\DateTime
     {
         if (empty($value)) {
             return null;

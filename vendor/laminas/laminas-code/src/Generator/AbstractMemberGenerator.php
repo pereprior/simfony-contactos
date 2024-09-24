@@ -27,7 +27,7 @@ abstract class AbstractMemberGenerator extends AbstractGenerator
 
     /**
      * @param  int|int[] $flags
-     * @return static
+     * @return AbstractMemberGenerator
      */
     public function setFlags($flags)
     {
@@ -46,7 +46,7 @@ abstract class AbstractMemberGenerator extends AbstractGenerator
 
     /**
      * @param  int $flag
-     * @return static
+     * @return AbstractMemberGenerator
      */
     public function addFlag($flag)
     {
@@ -56,7 +56,7 @@ abstract class AbstractMemberGenerator extends AbstractGenerator
 
     /**
      * @param  int $flag
-     * @return static
+     * @return AbstractMemberGenerator
      */
     public function removeFlag($flag)
     {
@@ -66,7 +66,7 @@ abstract class AbstractMemberGenerator extends AbstractGenerator
 
     /**
      * @param  bool $isAbstract
-     * @return static
+     * @return AbstractMemberGenerator
      */
     public function setAbstract($isAbstract)
     {
@@ -83,7 +83,7 @@ abstract class AbstractMemberGenerator extends AbstractGenerator
 
     /**
      * @param  bool $isInterface
-     * @return static
+     * @return AbstractMemberGenerator
      */
     public function setInterface($isInterface)
     {
@@ -100,7 +100,7 @@ abstract class AbstractMemberGenerator extends AbstractGenerator
 
     /**
      * @param  bool $isFinal
-     * @return static
+     * @return AbstractMemberGenerator
      */
     public function setFinal($isFinal)
     {
@@ -117,7 +117,7 @@ abstract class AbstractMemberGenerator extends AbstractGenerator
 
     /**
      * @param  bool $isStatic
-     * @return static
+     * @return AbstractMemberGenerator
      */
     public function setStatic($isStatic)
     {
@@ -134,7 +134,7 @@ abstract class AbstractMemberGenerator extends AbstractGenerator
 
     /**
      * @param  string $visibility
-     * @return static
+     * @return AbstractMemberGenerator
      */
     public function setVisibility($visibility)
     {
@@ -173,7 +173,7 @@ abstract class AbstractMemberGenerator extends AbstractGenerator
 
     /**
      * @param  string $name
-     * @return static
+     * @return AbstractMemberGenerator
      */
     public function setName($name)
     {
@@ -192,7 +192,7 @@ abstract class AbstractMemberGenerator extends AbstractGenerator
     /**
      * @param  DocBlockGenerator|string $docBlock
      * @throws Exception\InvalidArgumentException
-     * @return static
+     * @return AbstractMemberGenerator
      */
     public function setDocBlock($docBlock)
     {

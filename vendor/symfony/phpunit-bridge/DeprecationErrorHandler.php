@@ -11,11 +11,9 @@
 
 namespace Symfony\Bridge\PhpUnit;
 
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\TestResult;
-use PHPUnit\Runner\ErrorHandler;
 use PHPUnit\Util\Error\Handler;
-use PHPUnit\Util\ErrorHandler as UtilErrorHandler;
+use PHPUnit\Util\ErrorHandler;
 use Symfony\Bridge\PhpUnit\DeprecationErrorHandler\Configuration;
 use Symfony\Bridge\PhpUnit\DeprecationErrorHandler\Deprecation;
 use Symfony\Bridge\PhpUnit\DeprecationErrorHandler\DeprecationGroup;
@@ -77,12 +75,7 @@ class DeprecationErrorHandler
         if (null !== $oldErrorHandler) {
             restore_error_handler();
 
-            if (
-                $oldErrorHandler instanceof UtilErrorHandler
-                || [UtilErrorHandler::class, 'handleError'] === $oldErrorHandler
-                || $oldErrorHandler instanceof ErrorHandler
-                || [ErrorHandler::class, 'handleError'] === $oldErrorHandler
-            ) {
+            if ($oldErrorHandler instanceof ErrorHandler || [ErrorHandler::class, 'handleError'] === $oldErrorHandler) {
                 restore_error_handler();
                 self::register($mode);
             }
@@ -139,7 +132,7 @@ class DeprecationErrorHandler
             $msg = $trace[1]['args'][0];
         }
 
-        $deprecation = new Deprecation($msg, $trace, $file, \E_DEPRECATED === $type);
+        $deprecation = new Deprecation($msg, $trace, $file);
         if ($deprecation->isMuted()) {
             return null;
         }
@@ -210,7 +203,7 @@ class DeprecationErrorHandler
         // store failing status
         $isFailing = !$configuration->tolerates($this->deprecationGroups);
 
-        $this->displayDeprecations($groups, $configuration);
+        $this->displayDeprecations($groups, $configuration, $isFailing);
 
         $this->resetDeprecationGroups();
 
@@ -223,7 +216,7 @@ class DeprecationErrorHandler
             }
 
             $isFailingAtShutdown = !$configuration->tolerates($this->deprecationGroups);
-            $this->displayDeprecations($groups, $configuration);
+            $this->displayDeprecations($groups, $configuration, $isFailingAtShutdown);
 
             if ($configuration->isGeneratingBaseline()) {
                 $configuration->writeBaseline();
@@ -279,7 +272,13 @@ class DeprecationErrorHandler
         return $this->configuration = Configuration::fromUrlEncodedString((string) $mode);
     }
 
-    private static function colorize(string $str, bool $red): string
+    /**
+     * @param string $str
+     * @param bool   $red
+     *
+     * @return string
+     */
+    private static function colorize($str, $red)
     {
         if (!self::hasColorSupport()) {
             return $str;
@@ -291,9 +290,13 @@ class DeprecationErrorHandler
     }
 
     /**
-     * @param string[] $groups
+     * @param string[]      $groups
+     * @param Configuration $configuration
+     * @param bool          $isFailing
+     *
+     * @throws \InvalidArgumentException
      */
-    private function displayDeprecations(array $groups, Configuration $configuration): void
+    private function displayDeprecations($groups, $configuration, $isFailing)
     {
         $cmp = function ($a, $b) {
             return $b->count() - $a->count();
@@ -320,8 +323,7 @@ class DeprecationErrorHandler
                     fwrite($handle, "\n".self::colorize($deprecationGroupMessage, 'legacy' !== $group && 'indirect' !== $group)."\n");
                 }
 
-                // Skip the verbose output if the group is quiet and not failing according to its threshold:
-                if ('legacy' !== $group && !$configuration->verboseOutput($group) && $configuration->toleratesForGroup($group, $this->deprecationGroups)) {
+                if ('legacy' !== $group && !$configuration->verboseOutput($group) && !$isFailing) {
                     continue;
                 }
                 $notices = $this->deprecationGroups[$group]->notices();
@@ -352,13 +354,11 @@ class DeprecationErrorHandler
         }
     }
 
-    private static function getPhpUnitErrorHandler(): callable
+    private static function getPhpUnitErrorHandler()
     {
         if (!$eh = self::$errorHandler) {
             if (class_exists(Handler::class)) {
                 $eh = self::$errorHandler = Handler::class;
-            } elseif (method_exists(UtilErrorHandler::class, '__invoke')) {
-                $eh = self::$errorHandler = UtilErrorHandler::class;
             } elseif (method_exists(ErrorHandler::class, '__invoke')) {
                 $eh = self::$errorHandler = ErrorHandler::class;
             } else {
@@ -371,23 +371,13 @@ class DeprecationErrorHandler
         }
 
         foreach (debug_backtrace(\DEBUG_BACKTRACE_PROVIDE_OBJECT | \DEBUG_BACKTRACE_IGNORE_ARGS) as $frame) {
-            if (!isset($frame['object'])) {
-                continue;
-            }
-
-            if ($frame['object'] instanceof TestResult) {
+            if (isset($frame['object']) && $frame['object'] instanceof TestResult) {
                 return new $eh(
                     $frame['object']->getConvertDeprecationsToExceptions(),
                     $frame['object']->getConvertErrorsToExceptions(),
                     $frame['object']->getConvertNoticesToExceptions(),
                     $frame['object']->getConvertWarningsToExceptions()
                 );
-            } elseif (ErrorHandler::class === $eh && $frame['object'] instanceof TestCase) {
-                return function (int $errorNumber, string $errorString, string $errorFile, int $errorLine) {
-                    ErrorHandler::instance()($errorNumber, $errorString, $errorFile, $errorLine);
-
-                    return true;
-                };
             }
         }
 
@@ -399,41 +389,43 @@ class DeprecationErrorHandler
      *
      * Reference: Composer\XdebugHandler\Process::supportsColor
      * https://github.com/composer/xdebug-handler
+     *
+     * @return bool
      */
-    private static function hasColorSupport(): bool
+    private static function hasColorSupport()
     {
         if (!\defined('STDOUT')) {
             return false;
         }
 
         // Follow https://no-color.org/
-        if ('' !== (($_SERVER['NO_COLOR'] ?? getenv('NO_COLOR'))[0] ?? '')) {
+        if (isset($_SERVER['NO_COLOR']) || false !== getenv('NO_COLOR')) {
             return false;
         }
 
-        // Detect msysgit/mingw and assume this is a tty because detection
-        // does not work correctly, see https://github.com/composer/composer/issues/9690
-        if (!@stream_isatty(\STDOUT) && !\in_array(strtoupper((string) getenv('MSYSTEM')), ['MINGW32', 'MINGW64'], true)) {
-            return false;
-        }
-
-        if ('\\' === \DIRECTORY_SEPARATOR && @sapi_windows_vt100_support(\STDOUT)) {
+        if ('Hyper' === getenv('TERM_PROGRAM')) {
             return true;
         }
 
-        if ('Hyper' === getenv('TERM_PROGRAM')
-            || false !== getenv('COLORTERM')
-            || false !== getenv('ANSICON')
-            || 'ON' === getenv('ConEmuANSI')
-        ) {
-            return true;
+        if (\DIRECTORY_SEPARATOR === '\\') {
+            return (\function_exists('sapi_windows_vt100_support')
+                && sapi_windows_vt100_support(\STDOUT))
+                || false !== getenv('ANSICON')
+                || 'ON' === getenv('ConEmuANSI')
+                || 'xterm' === getenv('TERM');
         }
 
-        if ('dumb' === $term = (string) getenv('TERM')) {
-            return false;
+        if (\function_exists('stream_isatty')) {
+            return @stream_isatty(\STDOUT);
         }
 
-        // See https://github.com/chalk/supports-color/blob/d4f413efaf8da045c5ab440ed418ef02dbb28bf1/index.js#L157
-        return preg_match('/^((screen|xterm|vt100|vt220|putty|rxvt|ansi|cygwin|linux).*)|(.*-256(color)?(-bce)?)$/', $term);
+        if (\function_exists('posix_isatty')) {
+            return @posix_isatty(\STDOUT);
+        }
+
+        $stat = fstat(\STDOUT);
+
+        // Check if formatted mode is S_IFCHR
+        return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
     }
 }

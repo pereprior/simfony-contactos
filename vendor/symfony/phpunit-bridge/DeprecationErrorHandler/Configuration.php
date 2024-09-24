@@ -59,7 +59,7 @@ class Configuration
     /**
      * @var string|null
      */
-    private $logFile;
+    private $logFile = null;
 
     /**
      * @param int[]       $thresholds       A hash associating groups to thresholds
@@ -70,7 +70,7 @@ class Configuration
      * @param string      $baselineFile     The path to the baseline file
      * @param string|null $logFile          The path to the log file
      */
-    private function __construct(array $thresholds = [], string $regex = '', array $verboseOutput = [], string $ignoreFile = '', bool $generateBaseline = false, string $baselineFile = '', ?string $logFile = null)
+    private function __construct(array $thresholds = [], $regex = '', $verboseOutput = [], $ignoreFile = '', $generateBaseline = false, $baselineFile = '', $logFile = null)
     {
         $groups = ['total', 'indirect', 'direct', 'self'];
 
@@ -154,15 +154,20 @@ class Configuration
         $this->logFile = $logFile;
     }
 
-    public function isEnabled(): bool
+    /**
+     * @return bool
+     */
+    public function isEnabled()
     {
         return $this->enabled;
     }
 
     /**
      * @param DeprecationGroup[] $deprecationGroups
+     *
+     * @return bool
      */
-    public function tolerates(array $deprecationGroups): bool
+    public function tolerates(array $deprecationGroups)
     {
         $grandTotal = 0;
 
@@ -199,40 +204,15 @@ class Configuration
     }
 
     /**
-     * @param array<string,DeprecationGroup> $deprecationGroups
-     *
-     * @return bool true if the threshold is not reached for the deprecation type nor for the total
+     * @return bool
      */
-    public function toleratesForGroup(string $groupName, array $deprecationGroups): bool
-    {
-        $grandTotal = 0;
-
-        foreach ($deprecationGroups as $type => $group) {
-            if ('legacy' !== $type) {
-                $grandTotal += $group->count();
-            }
-        }
-
-        if ($grandTotal > $this->thresholds['total']) {
-            return false;
-        }
-
-        if (\in_array($groupName, ['self', 'direct', 'indirect'], true) && $deprecationGroups[$groupName]->count() > $this->thresholds[$groupName]) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public function isBaselineDeprecation(Deprecation $deprecation): bool
+    public function isBaselineDeprecation(Deprecation $deprecation)
     {
         if ($deprecation->isLegacy()) {
             return false;
         }
 
-        if ($deprecation->originatesFromDebugClassLoader()) {
-            $location = $deprecation->triggeringClass();
-        } elseif ($deprecation->originatesFromAnObject()) {
+        if ($deprecation->originatesFromAnObject()) {
             $location = $deprecation->originatingClass().'::'.$deprecation->originatingMethod();
         } else {
             $location = 'procedural code';
@@ -254,17 +234,20 @@ class Configuration
         return $result;
     }
 
-    public function isGeneratingBaseline(): bool
+    /**
+     * @return bool
+     */
+    public function isGeneratingBaseline()
     {
         return $this->generateBaseline;
     }
 
-    public function getBaselineFile(): string
+    public function getBaselineFile()
     {
         return $this->baselineFile;
     }
 
-    public function writeBaseline(): void
+    public function writeBaseline()
     {
         $map = [];
         foreach ($this->baselineDeprecations as $location => $messages) {
@@ -279,35 +262,49 @@ class Configuration
         file_put_contents($this->baselineFile, json_encode($map, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES));
     }
 
-    public function shouldDisplayStackTrace(string $message): bool
+    /**
+     * @param string $message
+     *
+     * @return bool
+     */
+    public function shouldDisplayStackTrace($message)
     {
         return '' !== $this->regex && preg_match($this->regex, $message);
     }
 
-    public function isInRegexMode(): bool
+    /**
+     * @return bool
+     */
+    public function isInRegexMode()
     {
         return '' !== $this->regex;
     }
 
-    public function verboseOutput($group): bool
+    /**
+     * @return bool
+     */
+    public function verboseOutput($group)
     {
         return $this->verboseOutput[$group];
     }
 
-    public function shouldWriteToLogFile(): bool
+    public function shouldWriteToLogFile()
     {
         return null !== $this->logFile;
     }
 
-    public function getLogFile(): ?string
+    public function getLogFile()
     {
         return $this->logFile;
     }
 
     /**
-     * @param string $serializedConfiguration An encoded string, for instance max[total]=1234&max[indirect]=42
+     * @param string $serializedConfiguration an encoded string, for instance
+     *                                        max[total]=1234&max[indirect]=42
+     *
+     * @return self
      */
-    public static function fromUrlEncodedString(string $serializedConfiguration): self
+    public static function fromUrlEncodedString($serializedConfiguration)
     {
         parse_str($serializedConfiguration, $normalizedConfiguration);
         foreach (array_keys($normalizedConfiguration) as $key) {
@@ -353,7 +350,10 @@ class Configuration
         );
     }
 
-    public static function inDisabledMode(): self
+    /**
+     * @return self
+     */
+    public static function inDisabledMode()
     {
         $configuration = new self();
         $configuration->enabled = false;
@@ -361,12 +361,18 @@ class Configuration
         return $configuration;
     }
 
-    public static function inStrictMode(): self
+    /**
+     * @return self
+     */
+    public static function inStrictMode()
     {
         return new self(['total' => 0]);
     }
 
-    public static function inWeakMode(): self
+    /**
+     * @return self
+     */
+    public static function inWeakMode()
     {
         $verboseOutput = [];
         foreach (['unsilenced', 'direct', 'indirect', 'self', 'other'] as $group) {
@@ -376,12 +382,18 @@ class Configuration
         return new self([], '', $verboseOutput);
     }
 
-    public static function fromNumber($upperBound): self
+    /**
+     * @return self
+     */
+    public static function fromNumber($upperBound)
     {
         return new self(['total' => $upperBound]);
     }
 
-    public static function fromRegex($regex): self
+    /**
+     * @return self
+     */
+    public static function fromRegex($regex)
     {
         return new self([], $regex);
     }

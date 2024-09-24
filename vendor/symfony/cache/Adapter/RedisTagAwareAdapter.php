@@ -56,20 +56,15 @@ class RedisTagAwareAdapter extends AbstractTagAwareAdapter
     private const DEFAULT_CACHE_TTL = 8640000;
 
     /**
-     * @var string|null detected eviction policy used on Redis server
+     * detected eviction policy used on Redis server.
      */
-    private $redisEvictionPolicy;
-    private $namespace;
+    private string $redisEvictionPolicy;
+    private string $namespace;
 
-    /**
-     * @param \Redis|\RedisArray|\RedisCluster|\Predis\ClientInterface|RedisProxy|RedisClusterProxy $redis           The redis client
-     * @param string                                                                                $namespace       The default namespace
-     * @param int                                                                                   $defaultLifetime The default lifetime
-     */
-    public function __construct($redis, string $namespace = '', int $defaultLifetime = 0, MarshallerInterface $marshaller = null)
+    public function __construct(\Redis|\RedisArray|\RedisCluster|\Predis\ClientInterface|RedisProxy|RedisClusterProxy $redis, string $namespace = '', int $defaultLifetime = 0, MarshallerInterface $marshaller = null)
     {
         if ($redis instanceof \Predis\ClientInterface && $redis->getConnection() instanceof ClusterInterface && !$redis->getConnection() instanceof PredisCluster) {
-            throw new InvalidArgumentException(sprintf('Unsupported Predis cluster connection: only "%s" is, "%s" given.', PredisCluster::class, \get_class($redis->getConnection())));
+            throw new InvalidArgumentException(sprintf('Unsupported Predis cluster connection: only "%s" is, "%s" given.', PredisCluster::class, get_debug_type($redis->getConnection())));
         }
 
         if (\defined('Redis::OPT_COMPRESSION') && ($redis instanceof \Redis || $redis instanceof \RedisArray || $redis instanceof \RedisCluster)) {
@@ -147,7 +142,11 @@ class RedisTagAwareAdapter extends AbstractTagAwareAdapter
     {
         $lua = <<<'EOLUA'
             local v = redis.call('GET', KEYS[1])
-            redis.call('DEL', KEYS[1])
+            local e = redis.pcall('UNLINK', KEYS[1])
+
+            if type(e) ~= 'number' then
+                redis.call('DEL', KEYS[1])
+            end
 
             if not v or v:len() <= 13 or v:byte(1) ~= 0x9D or v:byte(6) ~= 0 or v:byte(10) ~= 0x5F then
                 return ''
@@ -171,7 +170,7 @@ EOLUA;
 
             try {
                 yield $id => !\is_string($result) || '' === $result ? [] : $this->marshaller->unmarshall($result);
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 yield $id => [];
             }
         }
@@ -204,7 +203,7 @@ EOLUA;
         // and removes the linked items. When the set is still not empty after
         // the scan, it means we're in cluster mode and that the linked items
         // are on other nodes: we move the links to a temporary set and we
-        // garbage collect that set from the client side.
+        // gargage collect that set from the client side.
 
         $lua = <<<'EOLUA'
             redis.replicate_commands()
@@ -293,7 +292,7 @@ EOLUA;
 
     private function getRedisEvictionPolicy(): string
     {
-        if (null !== $this->redisEvictionPolicy) {
+        if (isset($this->redisEvictionPolicy)) {
             return $this->redisEvictionPolicy;
         }
 

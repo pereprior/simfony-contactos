@@ -28,9 +28,9 @@ abstract class AbstractStream
     protected $in;
     protected $out;
 
-    private $debug = '';
+    private string $debug = '';
 
-    public function write(string $bytes, $debug = true): void
+    public function write(string $bytes, bool $debug = true): void
     {
         if ($debug) {
             foreach (explode("\n", trim($bytes)) as $line) {
@@ -75,7 +75,7 @@ abstract class AbstractStream
         }
 
         $line = fgets($this->out);
-        if ('' === $line || false === $line) {
+        if ('' === $line) {
             $metas = stream_get_meta_data($this->out);
             if ($metas['timed_out']) {
                 throw new TransportException(sprintf('Connection to "%s" timed out.', $this->getReadConnectionDescription()));

@@ -206,10 +206,10 @@ final class TableMetadataStorage implements MetadataStorage
             return null;
         }
 
-        $currentTable = $this->schemaManager->introspectTable($this->configuration->getTableName());
-        $diff         = $this->schemaManager->createComparator()->compareTables($currentTable, $expectedTable);
+        $currentTable = $this->schemaManager->listTableDetails($this->configuration->getTableName());
+        $diff         = $this->schemaManager->createComparator()->diffTable($currentTable, $expectedTable);
 
-        return $diff->isEmpty() ? null : $diff;
+        return $diff instanceof TableDiff ? $diff : null;
     }
 
     private function isInitialized(): bool

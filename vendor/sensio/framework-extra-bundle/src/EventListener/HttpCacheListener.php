@@ -157,6 +157,9 @@ class HttpCacheListener implements EventSubscriberInterface
         }
     }
 
+    /**
+     * @return array
+     */
     public static function getSubscribedEvents()
     {
         return [
@@ -187,7 +190,7 @@ class HttpCacheListener implements EventSubscriberInterface
         if (!is_numeric($time)) {
             $now = microtime(true);
 
-            $time = ceil(strtotime($time, $now) - $now);
+            $time = ceil(strtotime($time, (int) $now) - $now);
         }
 
         return $time;

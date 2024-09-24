@@ -19,7 +19,7 @@ class ClockMock
 {
     private static $now;
 
-    public static function withClockMock($enable = null): ?bool
+    public static function withClockMock($enable = null)
     {
         if (null === $enable) {
             return null !== self::$now;
@@ -30,7 +30,7 @@ class ClockMock
         return null;
     }
 
-    public static function time(): int
+    public static function time()
     {
         if (null === self::$now) {
             return \time();
@@ -39,7 +39,7 @@ class ClockMock
         return (int) self::$now;
     }
 
-    public static function sleep($s): int
+    public static function sleep($s)
     {
         if (null === self::$now) {
             return \sleep($s);
@@ -50,7 +50,7 @@ class ClockMock
         return 0;
     }
 
-    public static function usleep($us): void
+    public static function usleep($us)
     {
         if (null === self::$now) {
             \usleep($us);
@@ -59,9 +59,6 @@ class ClockMock
         }
     }
 
-    /**
-     * @return string|float
-     */
     public static function microtime($asFloat = false)
     {
         if (null === self::$now) {
@@ -75,7 +72,7 @@ class ClockMock
         return sprintf('%0.6f00 %d', self::$now - (int) self::$now, (int) self::$now);
     }
 
-    public static function date($format, $timestamp = null): string
+    public static function date($format, $timestamp = null)
     {
         if (null === $timestamp) {
             $timestamp = self::time();
@@ -84,7 +81,7 @@ class ClockMock
         return \date($format, $timestamp);
     }
 
-    public static function gmdate($format, $timestamp = null): string
+    public static function gmdate($format, $timestamp = null)
     {
         if (null === $timestamp) {
             $timestamp = self::time();
@@ -93,23 +90,7 @@ class ClockMock
         return \gmdate($format, $timestamp);
     }
 
-    /**
-     * @return array|int|float
-     */
-    public static function hrtime($asNumber = false)
-    {
-        $ns = (self::$now - (int) self::$now) * 1000000000;
-
-        if ($asNumber) {
-            $number = sprintf('%d%d', (int) self::$now, $ns);
-
-            return \PHP_INT_SIZE === 8 ? (int) $number : (float) $number;
-        }
-
-        return [(int) self::$now, (int) $ns];
-    }
-
-    public static function register($class): void
+    public static function register($class)
     {
         $self = static::class;
 
@@ -155,11 +136,6 @@ function date(\$format, \$timestamp = null)
 function gmdate(\$format, \$timestamp = null)
 {
     return \\$self::gmdate(\$format, \$timestamp);
-}
-
-function hrtime(\$asNumber = false)
-{
-    return \\$self::hrtime(\$asNumber);
 }
 EOPHP
             );

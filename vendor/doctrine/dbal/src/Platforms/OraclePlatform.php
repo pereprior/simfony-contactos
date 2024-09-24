@@ -13,7 +13,6 @@ use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Schema\TableDiff;
 use Doctrine\DBAL\TransactionIsolationLevel;
 use Doctrine\DBAL\Types\BinaryType;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\Deprecations\Deprecation;
 use InvalidArgumentException;
 
@@ -104,7 +103,7 @@ class OraclePlatform extends AbstractPlatform
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function getDateArithmeticIntervalExpression($date, $operator, $interval, $unit)
     {
@@ -114,11 +113,11 @@ class OraclePlatform extends AbstractPlatform
             case DateIntervalUnit::YEAR:
                 switch ($unit) {
                     case DateIntervalUnit::QUARTER:
-                        $interval = $this->multiplyInterval((string) $interval, 3);
+                        $interval *= 3;
                         break;
 
                     case DateIntervalUnit::YEAR:
-                        $interval = $this->multiplyInterval((string) $interval, 12);
+                        $interval *= 12;
                         break;
                 }
 
@@ -374,7 +373,7 @@ class OraclePlatform extends AbstractPlatform
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function getBinaryTypeDeclarationSQLSnippet($length, $fixed/*, $lengthOmitted = false*/)
     {
@@ -391,7 +390,7 @@ class OraclePlatform extends AbstractPlatform
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @deprecated
      */
@@ -799,7 +798,7 @@ SQL
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @internal The method should be only used from within the {@see AbstractPlatform} class hierarchy.
      */
@@ -819,7 +818,7 @@ SQL
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @internal The method should be only used from within the {@see AbstractPlatform} class hierarchy.
      */
@@ -1002,7 +1001,7 @@ SQL
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @internal The method should be only used from within the {@see AbstractPlatform} class hierarchy.
      */
@@ -1051,7 +1050,7 @@ SQL
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function getRenameIndexSQL($oldIndexName, Index $index, $tableName)
     {
@@ -1064,7 +1063,7 @@ SQL
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @deprecated
      */
@@ -1081,7 +1080,7 @@ SQL
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @internal The method should be only used from within the OraclePlatform class hierarchy.
      */
@@ -1241,29 +1240,29 @@ SQL
     protected function initializeDoctrineTypeMappings()
     {
         $this->doctrineTypeMapping = [
-            'binary_double'  => Types::FLOAT,
-            'binary_float'   => Types::FLOAT,
-            'binary_integer' => Types::BOOLEAN,
-            'blob'           => Types::BLOB,
-            'char'           => Types::STRING,
-            'clob'           => Types::TEXT,
-            'date'           => Types::DATE_MUTABLE,
-            'float'          => Types::FLOAT,
-            'integer'        => Types::INTEGER,
-            'long'           => Types::STRING,
-            'long raw'       => Types::BLOB,
-            'nchar'          => Types::STRING,
-            'nclob'          => Types::TEXT,
-            'number'         => Types::INTEGER,
-            'nvarchar2'      => Types::STRING,
-            'pls_integer'    => Types::BOOLEAN,
-            'raw'            => Types::BINARY,
-            'rowid'          => Types::STRING,
-            'timestamp'      => Types::DATETIME_MUTABLE,
-            'timestamptz'    => Types::DATETIMETZ_MUTABLE,
-            'urowid'         => Types::STRING,
-            'varchar'        => Types::STRING,
-            'varchar2'       => Types::STRING,
+            'binary_double'  => 'float',
+            'binary_float'   => 'float',
+            'binary_integer' => 'boolean',
+            'blob'           => 'blob',
+            'char'           => 'string',
+            'clob'           => 'text',
+            'date'           => 'date',
+            'float'          => 'float',
+            'integer'        => 'integer',
+            'long'           => 'string',
+            'long raw'       => 'blob',
+            'nchar'          => 'string',
+            'nclob'          => 'text',
+            'number'         => 'integer',
+            'nvarchar2'      => 'string',
+            'pls_integer'    => 'boolean',
+            'raw'            => 'binary',
+            'rowid'          => 'string',
+            'timestamp'      => 'datetime',
+            'timestamptz'    => 'datetimetz',
+            'urowid'         => 'string',
+            'varchar'        => 'string',
+            'varchar2'       => 'string',
         ];
     }
 

@@ -28,10 +28,13 @@ use const PHP_SAPI;
 
 final class SqlFormatter
 {
-    private readonly Highlighter $highlighter;
-    private readonly Tokenizer $tokenizer;
+    /** @var Highlighter */
+    private $highlighter;
 
-    public function __construct(Highlighter|null $highlighter = null)
+    /** @var Tokenizer */
+    private $tokenizer;
+
+    public function __construct(?Highlighter $highlighter = null)
     {
         $this->tokenizer   = new Tokenizer();
         $this->highlighter = $highlighter ?? (PHP_SAPI === 'cli' ? new CliHighlighter() : new HtmlHighlighter());
@@ -70,7 +73,7 @@ final class SqlFormatter
         while ($token = $cursor->next(Token::TOKEN_TYPE_WHITESPACE)) {
             $highlighted = $this->highlighter->highlightToken(
                 $token->type(),
-                $token->value(),
+                $token->value()
             );
 
             // If we are increasing the special indent level now
@@ -172,7 +175,7 @@ final class SqlFormatter
                             Token::TOKEN_TYPE_RESERVED_TOPLEVEL,
                             Token::TOKEN_TYPE_RESERVED_NEWLINE,
                             Token::TOKEN_TYPE_COMMENT,
-                            Token::TOKEN_TYPE_BLOCK_COMMENT,
+                            Token::TOKEN_TYPE_BLOCK_COMMENT
                         )
                     ) {
                         break;
@@ -256,15 +259,6 @@ final class SqlFormatter
                 if ($token->value() === 'LIMIT' && ! $inlineParentheses) {
                     $clauseLimit = true;
                 }
-            } elseif ($token->value() === ';') {
-                // If the last indent type was 'special', decrease the special indent for this round
-                reset($indentTypes);
-                if (current($indentTypes) === 'special') {
-                    $indentLevel--;
-                    array_shift($indentTypes);
-                }
-
-                $newline = true;
             } elseif (
                 $clauseLimit &&
                 $token->value() !== ',' &&
@@ -340,7 +334,7 @@ final class SqlFormatter
                     Token::TOKEN_TYPE_QUOTE,
                     Token::TOKEN_TYPE_BACKTICK_QUOTE,
                     Token::TOKEN_TYPE_WORD,
-                    Token::TOKEN_TYPE_NUMBER,
+                    Token::TOKEN_TYPE_NUMBER
                 )
             ) {
                 continue;
@@ -353,7 +347,7 @@ final class SqlFormatter
         if (array_search('block', $indentTypes) !== false) {
             $return  = rtrim($return, ' ');
             $return .= $this->highlighter->highlightErrorMessage(
-                'WARNING: unclosed parentheses or section',
+                'WARNING: unclosed parentheses or section'
             );
         }
 
@@ -379,7 +373,7 @@ final class SqlFormatter
         while ($token = $cursor->next()) {
             $return .= $this->highlighter->highlightToken(
                 $token->type(),
-                $token->value(),
+                $token->value()
             );
         }
 
@@ -411,7 +405,7 @@ final class SqlFormatter
                 $token->isOfType(
                     Token::TOKEN_TYPE_RESERVED,
                     Token::TOKEN_TYPE_RESERVED_NEWLINE,
-                    Token::TOKEN_TYPE_RESERVED_TOPLEVEL,
+                    Token::TOKEN_TYPE_RESERVED_TOPLEVEL
                 )
             ) {
                 $newValue = preg_replace('/\s+/', ' ', $token->value());

@@ -4,8 +4,10 @@ namespace Laminas\Code\Generator;
 
 use Traversable;
 
-use function get_debug_type;
+use function get_class;
+use function gettype;
 use function is_array;
+use function is_object;
 use function method_exists;
 use function sprintf;
 
@@ -38,7 +40,7 @@ abstract class AbstractGenerator implements GeneratorInterface
 
     /**
      * @param  bool $isSourceDirty
-     * @return static
+     * @return AbstractGenerator
      */
     public function setSourceDirty($isSourceDirty = true)
     {
@@ -56,7 +58,7 @@ abstract class AbstractGenerator implements GeneratorInterface
 
     /**
      * @param  string $indentation
-     * @return static
+     * @return AbstractGenerator
      */
     public function setIndentation($indentation)
     {
@@ -74,7 +76,7 @@ abstract class AbstractGenerator implements GeneratorInterface
 
     /**
      * @param  ?string $sourceContent
-     * @return static
+     * @return AbstractGenerator
      */
     public function setSourceContent($sourceContent)
     {
@@ -93,7 +95,7 @@ abstract class AbstractGenerator implements GeneratorInterface
     /**
      * @param  array|Traversable $options
      * @throws Exception\InvalidArgumentException
-     * @return static
+     * @return AbstractGenerator
      */
     public function setOptions($options)
     {
@@ -101,7 +103,7 @@ abstract class AbstractGenerator implements GeneratorInterface
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s expects an array or Traversable object; received "%s"',
                 __METHOD__,
-                get_debug_type($options)
+                is_object($options) ? get_class($options) : gettype($options)
             ));
         }
 

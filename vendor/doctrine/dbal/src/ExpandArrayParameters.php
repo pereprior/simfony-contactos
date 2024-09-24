@@ -98,10 +98,9 @@ final class ExpandArrayParameters implements Visitor
         $type = $this->originalTypes[$key];
 
         if (
-            $type !== ArrayParameterType::INTEGER
-            && $type !== ArrayParameterType::STRING
-            && $type !== ArrayParameterType::ASCII
-            && $type !== ArrayParameterType::BINARY
+            $type !== Connection::PARAM_INT_ARRAY
+            && $type !== Connection::PARAM_STR_ARRAY
+            && $type !== Connection::PARAM_ASCII_STR_ARRAY
         ) {
             $this->appendTypedParameter([$value], $type);
 
@@ -114,7 +113,7 @@ final class ExpandArrayParameters implements Visitor
             return;
         }
 
-        $this->appendTypedParameter($value, ArrayParameterType::toElementParameterType($type));
+        $this->appendTypedParameter($value, $type - Connection::ARRAY_PARAM_OFFSET);
     }
 
     /** @return array<int,Type|int|string|null> */

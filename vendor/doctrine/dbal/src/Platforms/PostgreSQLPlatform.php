@@ -10,13 +10,9 @@ use Doctrine\DBAL\Schema\Identifier;
 use Doctrine\DBAL\Schema\Index;
 use Doctrine\DBAL\Schema\PostgreSQLSchemaManager;
 use Doctrine\DBAL\Schema\Sequence;
-use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Schema\TableDiff;
-use Doctrine\DBAL\SQL\Builder\DefaultSelectSQLBuilder;
-use Doctrine\DBAL\SQL\Builder\SelectSQLBuilder;
 use Doctrine\DBAL\Types\BinaryType;
 use Doctrine\DBAL\Types\BlobType;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\Deprecations\Deprecation;
 use UnexpectedValueException;
 
@@ -131,13 +127,13 @@ class PostgreSQLPlatform extends AbstractPlatform
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function getDateArithmeticIntervalExpression($date, $operator, $interval, $unit)
     {
         if ($unit === DateIntervalUnit::QUARTER) {
-            $interval = $this->multiplyInterval((string) $interval, 3);
-            $unit     = DateIntervalUnit::MONTH;
+            $interval *= 3;
+            $unit      = DateIntervalUnit::MONTH;
         }
 
         return '(' . $date . ' ' . $operator . ' (' . $interval . " || ' " . $unit . "')::interval)";
@@ -173,7 +169,7 @@ class PostgreSQLPlatform extends AbstractPlatform
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @deprecated
      */
@@ -198,7 +194,7 @@ class PostgreSQLPlatform extends AbstractPlatform
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @internal The method should be only used from within the {@see AbstractPlatform} class hierarchy.
      */
@@ -208,7 +204,7 @@ class PostgreSQLPlatform extends AbstractPlatform
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @deprecated
      */
@@ -225,7 +221,7 @@ class PostgreSQLPlatform extends AbstractPlatform
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @deprecated
      */
@@ -266,11 +262,6 @@ class PostgreSQLPlatform extends AbstractPlatform
         );
 
         return true;
-    }
-
-    public function createSelectSQLBuilder(): SelectSQLBuilder
-    {
-        return new DefaultSelectSQLBuilder($this, 'FOR UPDATE', null);
     }
 
     /**
@@ -737,7 +728,7 @@ SQL
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function getRenameIndexSQL($oldIndexName, Index $index, $tableName)
     {
@@ -750,7 +741,7 @@ SQL
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @internal The method should be only used from within the {@see AbstractPlatform} class hierarchy.
      */
@@ -821,36 +812,6 @@ SQL
     /**
      * {@inheritDoc}
      */
-    public function getDropIndexSQL($index, $table = null)
-    {
-        if ($index instanceof Index && $index->isPrimary() && $table !== null) {
-            $constraintName = $index->getName() === 'primary' ? $this->tableName($table) . '_pkey' : $index->getName();
-
-            return $this->getDropConstraintSQL($constraintName, $table);
-        }
-
-        if ($index === '"primary"' && $table !== null) {
-            $constraintName = $this->tableName($table) . '_pkey';
-
-            return $this->getDropConstraintSQL($constraintName, $table);
-        }
-
-        return parent::getDropIndexSQL($index, $table);
-    }
-
-    /**
-     * @param Table|string|null $table
-     *
-     * @return string
-     */
-    private function tableName($table)
-    {
-        return $table instanceof Table ? $table->getName() : (string) $table;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     protected function _getCreateTableSQL($name, array $columns, array $options = [])
     {
         $queryFields = $this->getColumnDeclarationListSQL($columns);
@@ -860,9 +821,7 @@ SQL
             $queryFields .= ', PRIMARY KEY(' . implode(', ', $keyColumns) . ')';
         }
 
-        $unlogged = isset($options['unlogged']) && $options['unlogged'] === true ? ' UNLOGGED' : '';
-
-        $query = 'CREATE' . $unlogged . ' TABLE ' . $name . ' (' . $queryFields . ')';
+        $query = 'CREATE TABLE ' . $name . ' (' . $queryFields . ')';
 
         $sql = [$query];
 
@@ -998,12 +957,6 @@ SQL
 
     /**
      * {@inheritDoc}
-     *
-     * @param T $item
-     *
-     * @return (T is null ? null : bool)
-     *
-     * @template T
      */
     public function convertFromBoolean($item)
     {
@@ -1133,7 +1086,7 @@ SQL
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function getBinaryTypeDeclarationSQLSnippet($length, $fixed)
     {
@@ -1194,19 +1147,6 @@ SQL
     }
 
     /**
-     * Get the snippet used to retrieve the default value for a given column
-     */
-    public function getDefaultColumnValueSQLSnippet(): string
-    {
-        return <<<'SQL'
-             SELECT pg_get_expr(adbin, adrelid)
-             FROM pg_attrdef
-             WHERE c.oid = pg_attrdef.adrelid
-                AND pg_attrdef.adnum=a.attnum
-        SQL;
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function getReadLockSQL()
@@ -1220,47 +1160,47 @@ SQL
     protected function initializeDoctrineTypeMappings()
     {
         $this->doctrineTypeMapping = [
-            'bigint'           => Types::BIGINT,
-            'bigserial'        => Types::BIGINT,
-            'bool'             => Types::BOOLEAN,
-            'boolean'          => Types::BOOLEAN,
-            'bpchar'           => Types::STRING,
-            'bytea'            => Types::BLOB,
-            'char'             => Types::STRING,
-            'date'             => Types::DATE_MUTABLE,
-            'datetime'         => Types::DATETIME_MUTABLE,
-            'decimal'          => Types::DECIMAL,
-            'double'           => Types::FLOAT,
-            'double precision' => Types::FLOAT,
-            'float'            => Types::FLOAT,
-            'float4'           => Types::FLOAT,
-            'float8'           => Types::FLOAT,
-            'inet'             => Types::STRING,
-            'int'              => Types::INTEGER,
-            'int2'             => Types::SMALLINT,
-            'int4'             => Types::INTEGER,
-            'int8'             => Types::BIGINT,
-            'integer'          => Types::INTEGER,
-            'interval'         => Types::STRING,
-            'json'             => Types::JSON,
-            'jsonb'            => Types::JSON,
-            'money'            => Types::DECIMAL,
-            'numeric'          => Types::DECIMAL,
-            'serial'           => Types::INTEGER,
-            'serial4'          => Types::INTEGER,
-            'serial8'          => Types::BIGINT,
-            'real'             => Types::FLOAT,
-            'smallint'         => Types::SMALLINT,
-            'text'             => Types::TEXT,
-            'time'             => Types::TIME_MUTABLE,
-            'timestamp'        => Types::DATETIME_MUTABLE,
-            'timestamptz'      => Types::DATETIMETZ_MUTABLE,
-            'timetz'           => Types::TIME_MUTABLE,
-            'tsvector'         => Types::TEXT,
-            'uuid'             => Types::GUID,
-            'varchar'          => Types::STRING,
-            'year'             => Types::DATE_MUTABLE,
-            '_varchar'         => Types::STRING,
+            'bigint'           => 'bigint',
+            'bigserial'        => 'bigint',
+            'bool'             => 'boolean',
+            'boolean'          => 'boolean',
+            'bpchar'           => 'string',
+            'bytea'            => 'blob',
+            'char'             => 'string',
+            'date'             => 'date',
+            'datetime'         => 'datetime',
+            'decimal'          => 'decimal',
+            'double'           => 'float',
+            'double precision' => 'float',
+            'float'            => 'float',
+            'float4'           => 'float',
+            'float8'           => 'float',
+            'inet'             => 'string',
+            'int'              => 'integer',
+            'int2'             => 'smallint',
+            'int4'             => 'integer',
+            'int8'             => 'bigint',
+            'integer'          => 'integer',
+            'interval'         => 'string',
+            'json'             => 'json',
+            'jsonb'            => 'json',
+            'money'            => 'decimal',
+            'numeric'          => 'decimal',
+            'serial'           => 'integer',
+            'serial4'          => 'integer',
+            'serial8'          => 'bigint',
+            'real'             => 'float',
+            'smallint'         => 'smallint',
+            'text'             => 'text',
+            'time'             => 'time',
+            'timestamp'        => 'datetime',
+            'timestamptz'      => 'datetimetz',
+            'timetz'           => 'time',
+            'tsvector'         => 'text',
+            'uuid'             => 'guid',
+            'varchar'          => 'string',
+            'year'             => 'date',
+            '_varchar'         => 'string',
         ];
     }
 
@@ -1281,7 +1221,7 @@ SQL
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getBinaryMaxLength()
     {
@@ -1295,7 +1235,7 @@ SQL
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @deprecated
      */
@@ -1311,7 +1251,7 @@ SQL
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @deprecated
      */
@@ -1353,7 +1293,7 @@ SQL
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @internal The method should be only used from within the {@see AbstractPlatform} class hierarchy.
      */
@@ -1367,7 +1307,7 @@ SQL
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @internal The method should be only used from within the {@see AbstractPlatform} class hierarchy.
      */
@@ -1377,7 +1317,7 @@ SQL
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getJsonTypeDeclarationSQL(array $column)
     {
