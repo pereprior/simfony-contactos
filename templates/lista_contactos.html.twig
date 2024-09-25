@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+{% block title %}Contactos{% endblock %}
+{% block body %}
+    {% if contactos %}
+        <h1>Listado de contactos</h1>
+        {% for contacto in contactos %}
+            {{ include('partials/datos_contacto.html.twig', {'contacto': contacto}) }}
+        {% endfor %}
+    {% else %}
+        <p>No se ha encontrado el contacto</p>
+    {% endif %}
+{% endblock %}

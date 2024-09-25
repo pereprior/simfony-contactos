@@ -19,10 +19,10 @@ class PageController extends AbstractController
     #[Route('/', name: 'init')]
     public function init(): Response
     {
-        return new Response("Bienvenido a la web de contactos");
+        return $this->render("inicio.html.twig", []);
     }
 
-    private array $contctsArray = [
+    private array $contacts = [
         1 => ["nombre" => "Juan Pérez", "telefono" => "524142432", "email" => "juanp@ieselcaminas.org"],
         2 => ["nombre" => "Ana López", "telefono" => "58958448", "email" => "anita@ieselcaminas.org"],
         5 => ["nombre" => "Mario Montero", "telefono" => "5326824", "email" => "mario.mont@ieselcaminas.org"],
@@ -30,45 +30,31 @@ class PageController extends AbstractController
         9 => ["nombre" => "Nora Jover", "telefono" => "54565859", "email" => "norajover@ieselcaminas.org"]
     ];
 
-    #[Route('/contact/{id}', name: 'contact')]
+    // Si no ponemos nada, sale 1 por defecto
+    #[Route('/contact/{id<\d+>?1}', name: 'contact')]
     public function contact(int $id): Response
     {
-        $result = $this->contctsArray[$id] ?? null;
+        $result = $this->contacts[$id] ?? null;
         if ($result) {
-            $html = "<ul>";
-            $html .= "<li>ID: " . $id . "</li>";
-            $html .= "<li>Nombre: " . $result["nombre"] . "</li>";
-            $html .= "<li>Teléfono: " . $result["telefono"] . "</li>";
-            $html .= "<li>Email: " . $result["email"] . "</li>";
-            $html .= "</ul>";
-
-            return new Response("<html><body>$html</body></html>");
+            return $this->render("ficha_contacto.html.twig", ["contacto" => $result]);
         }
         return new Response("Contacto no encontrado.");
     }
 
-    #[Route('/contact/search/{text}', name: 'contact')]
+    #[Route('/contact/search/{text}', name: 'search')]
     public function search($text): Response
     {
-        $resultados = array_filter($this->contctsArray,
-            function ($contacto) use ($text) {
-                return strpos($contacto["nombre"], $text) !== FALSE;
+        $result = array_filter($this->contacts,
+            function ($contact) use ($text) {
+                return str_contains($contact["nombre"], $text);
             }
         );
 
-        if (count($resultados)) {
-            $html = "<ul>";
-            foreach($resultados as $id => $resultado) {
-                $html .= "<li>" . $id . "</li>";
-                $html .= "<li>" . $resultado["nombre"] . "</li>";
-                $html .= "<li>" . $resultado['telefono'] . "</li>";
-                $html .= "<li>" . $resultado['email'] . "</li><br>";
-            }
-            $html .= "</ul>";
-            return new Response("<html><body>$html</body></html>");
+        if ($result) {
+            return $this->render("lista_contactos.html.twig", ["contactos" => $result]);
+        } else {
+            return new Response("Contacto no encontrado.");
         }
-
-        return new Response("No se han encontrado resultados.");
     }
 
 }
