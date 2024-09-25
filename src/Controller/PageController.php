@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Controller;
+use App\Entity\Usuario;
+use Doctrine\Persistence\ManagerRegistry;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -54,6 +56,26 @@ class PageController extends AbstractController
             return $this->render("lista_contactos.html.twig", ["contactos" => $result]);
         } else {
             return new Response("Contacto no encontrado.");
+        }
+    }
+
+    #[Route('/contact/add', name: 'add')]
+    public function addUser(ManagerRegistry $doctrine): Response
+    {
+        $entityManager = $doctrine->getManager();
+        foreach ($this->contacts as $contact) {
+            $user = new Usuario();
+            $user->setNombre($contact["nombre"]);
+            $user->setTelefono($contact["telefono"]);
+            $user->setEmail($contact["email"]);
+            $entityManager->persist($user);
+        }
+
+        try {
+            $entityManager->flush();
+            return new Response("Usuarios añadidos");
+        } catch (\Exception $e) {
+            return new Response("Error al añadir usuarios");
         }
     }
 

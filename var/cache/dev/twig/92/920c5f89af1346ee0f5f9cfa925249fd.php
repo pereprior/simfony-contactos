@@ -89,23 +89,13 @@ class __TwigTemplate_6f1fd9e1f7c73c9ff6d89c36c0828c1e extends Template
         if ((isset($context["contacto"]) || array_key_exists("contacto", $context) ? $context["contacto"] : (function () { throw new RuntimeError('Variable "contacto" does not exist.', 4, $this->source); })())) {
             // line 5
             echo "        <h1>Ficha del contacto</h1>
-        <ul>
-            <li><strong>";
-            // line 7
-            echo twig_escape_filter($this->env, twig_get_attribute($this->env, $this->source, (isset($context["contacto"]) || array_key_exists("contacto", $context) ? $context["contacto"] : (function () { throw new RuntimeError('Variable "contacto" does not exist.', 7, $this->source); })()), "nombre", [], "any", false, false, false, 7), "html", null, true);
-            echo "</strong></li>
-            <li><strong>Teléfono: </strong>";
-            // line 8
-            echo twig_escape_filter($this->env, twig_get_attribute($this->env, $this->source, (isset($context["contacto"]) || array_key_exists("contacto", $context) ? $context["contacto"] : (function () { throw new RuntimeError('Variable "contacto" does not exist.', 8, $this->source); })()), "telefono", [], "any", false, false, false, 8), "html", null, true);
-            echo "</li>
-            <li><strong>Correo: </strong>";
-            // line 9
-            echo twig_escape_filter($this->env, twig_get_attribute($this->env, $this->source, (isset($context["contacto"]) || array_key_exists("contacto", $context) ? $context["contacto"] : (function () { throw new RuntimeError('Variable "contacto" does not exist.', 9, $this->source); })()), "email", [], "any", false, false, false, 9), "html", null, true);
-            echo "</li>
-        </ul>
+        ";
+            // line 6
+            echo twig_include($this->env, $context, "partials/datos_contacto.html.twig", ["contacto" => (isset($context["contacto"]) || array_key_exists("contacto", $context) ? $context["contacto"] : (function () { throw new RuntimeError('Variable "contacto" does not exist.', 6, $this->source); })())]);
+            echo "
     ";
         } else {
-            // line 12
+            // line 8
             echo "        <p>No se ha encontrado el contacto</p>
     ";
         }
@@ -129,7 +119,7 @@ class __TwigTemplate_6f1fd9e1f7c73c9ff6d89c36c0828c1e extends Template
 
     public function getDebugInfo()
     {
-        return array (  109 => 12,  103 => 9,  99 => 8,  95 => 7,  91 => 5,  88 => 4,  78 => 3,  59 => 2,  36 => 1,);
+        return array (  99 => 8,  94 => 6,  91 => 5,  88 => 4,  78 => 3,  59 => 2,  36 => 1,);
     }
 
     public function getSourceContext()
@@ -139,11 +129,7 @@ class __TwigTemplate_6f1fd9e1f7c73c9ff6d89c36c0828c1e extends Template
 {% block body %}
     {% if(contacto) %}
         <h1>Ficha del contacto</h1>
-        <ul>
-            <li><strong>{{ contacto.nombre}}</strong></li>
-            <li><strong>Teléfono: </strong>{{ contacto.telefono}}</li>
-            <li><strong>Correo: </strong>{{ contacto.email}}</li>
-        </ul>
+        {{ include('partials/datos_contacto.html.twig', {'contacto': contacto}) }}
     {% else %}
         <p>No se ha encontrado el contacto</p>
     {% endif %}

@@ -7,6 +7,7 @@ return [
     'init' => [[], ['_controller' => 'App\\Controller\\PageController::init'], [], [['text', '/']], [], [], []],
     'contact' => [['id'], ['id' => '1', '_controller' => 'App\\Controller\\PageController::contact'], ['id' => '\\d+'], [['variable', '/', '\\d+', 'id', true], ['text', '/contact']], [], [], []],
     'search' => [['text'], ['_controller' => 'App\\Controller\\PageController::search'], [], [['variable', '/', '[^/]++', 'text', true], ['text', '/contact/search']], [], [], []],
+    'add' => [[], ['_controller' => 'App\\Controller\\PageController::addUser'], [], [['text', '/contact/add']], [], [], []],
     '_preview_error' => [['code', '_format'], ['_controller' => 'error_controller::preview', '_format' => 'html'], ['code' => '\\d+'], [['variable', '.', '[^/]++', '_format', true], ['variable', '/', '\\d+', 'code', true], ['text', '/_error']], [], [], []],
     '_wdt' => [['token'], ['_controller' => 'web_profiler.controller.profiler::toolbarAction'], [], [['variable', '/', '[^/]++', 'token', true], ['text', '/_wdt']], [], [], []],
     '_profiler_home' => [[], ['_controller' => 'web_profiler.controller.profiler::homeAction'], [], [['text', '/_profiler/']], [], [], []],

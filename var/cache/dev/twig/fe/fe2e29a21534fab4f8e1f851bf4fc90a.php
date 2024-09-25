@@ -53,22 +53,23 @@ class __TwigTemplate_cb1af163560a937c330a9c94abce285c extends Template
         $this->displayBlock('title', $context, $blocks);
         echo "</title>
     <link rel=\"icon\" href=\"data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>️</text></svg>\">
+
     ";
-        // line 8
+        // line 9
         echo "    ";
         $this->displayBlock('stylesheets', $context, $blocks);
-        // line 12
+        // line 13
         echo "
     ";
-        // line 13
+        // line 14
         $this->displayBlock('javascripts', $context, $blocks);
-        // line 16
+        // line 17
         echo "</head>
 <body>
 ";
-        // line 18
-        $this->displayBlock('body', $context, $blocks);
         // line 19
+        $this->displayBlock('body', $context, $blocks);
+        // line 20
         echo "</body>
 </html>";
         
@@ -98,7 +99,7 @@ class __TwigTemplate_cb1af163560a937c330a9c94abce285c extends Template
 
     }
 
-    // line 8
+    // line 9
     public function block_stylesheets($context, array $blocks = [])
     {
         $macros = $this->macros;
@@ -108,12 +109,12 @@ class __TwigTemplate_cb1af163560a937c330a9c94abce285c extends Template
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "stylesheets"));
 
-        // line 9
+        // line 10
         echo "        <link href=\"";
         echo twig_escape_filter($this->env, $this->extensions['Symfony\Bridge\Twig\Extension\AssetExtension']->getAssetUrl("css/estilos.css"), "html", null, true);
         echo "\" rel=\"stylesheet\" />
         ";
-        // line 10
+        // line 11
         echo twig_escape_filter($this->env, $this->env->getFunction('encore_entry_link_tags')->getCallable()("app"), "html", null, true);
         echo "
     ";
@@ -125,7 +126,7 @@ class __TwigTemplate_cb1af163560a937c330a9c94abce285c extends Template
 
     }
 
-    // line 13
+    // line 14
     public function block_javascripts($context, array $blocks = [])
     {
         $macros = $this->macros;
@@ -135,7 +136,7 @@ class __TwigTemplate_cb1af163560a937c330a9c94abce285c extends Template
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "javascripts"));
 
-        // line 14
+        // line 15
         echo "        ";
         echo twig_escape_filter($this->env, $this->env->getFunction('encore_entry_script_tags')->getCallable()("app"), "html", null, true);
         echo "
@@ -148,7 +149,7 @@ class __TwigTemplate_cb1af163560a937c330a9c94abce285c extends Template
 
     }
 
-    // line 18
+    // line 19
     public function block_body($context, array $blocks = [])
     {
         $macros = $this->macros;
@@ -173,7 +174,7 @@ class __TwigTemplate_cb1af163560a937c330a9c94abce285c extends Template
 
     public function getDebugInfo()
     {
-        return array (  152 => 18,  139 => 14,  129 => 13,  117 => 10,  112 => 9,  102 => 8,  83 => 5,  72 => 19,  70 => 18,  66 => 16,  64 => 13,  61 => 12,  58 => 8,  53 => 5,  47 => 1,);
+        return array (  153 => 19,  140 => 15,  130 => 14,  118 => 11,  113 => 10,  103 => 9,  84 => 5,  73 => 20,  71 => 19,  67 => 17,  65 => 14,  62 => 13,  59 => 9,  53 => 5,  47 => 1,);
     }
 
     public function getSourceContext()
@@ -184,6 +185,7 @@ class __TwigTemplate_cb1af163560a937c330a9c94abce285c extends Template
     <meta charset=\"UTF-8\">
     <title>{% block title %}Welcome!{% endblock %}</title>
     <link rel=\"icon\" href=\"data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>️</text></svg>\">
+
     {# Run `composer require symfony/webpack-encore-bundle` to start using Symfony UX #}
     {% block stylesheets %}
         <link href=\"{{ asset('css/estilos.css') }}\" rel=\"stylesheet\" />
