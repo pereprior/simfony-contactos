@@ -101,3 +101,10 @@ a9c036,127.0.0.1,GET,http://localhost:8000/contact/search/Ma,1727261175,,200
 ab29d3,127.0.0.1,GET,http://localhost:8000/,1727263495,,200
 1eacdf,127.0.0.1,GET,http://localhost:8000/contact/1,1727263501,,200
 b7c66a,127.0.0.1,GET,http://localhost:8000/contact/add,1727263505,,200
+06a6d7,127.0.0.1,GET,http://localhost:8000/contact/10,1727264009,,200
+928b3d,127.0.0.1,GET,http://localhost:8000/contact/1,1727264012,,200
+22238c,127.0.0.1,GET,http://localhost:8000/contact/search/Ma,1727264366,,200
+270831,127.0.0.1,GET,http://localhost:8000/contact/10,1727264757,,200
+4d8a35,127.0.0.1,GET,http://localhost:8000/contact/1,1727264759,,200
+17ad99,127.0.0.1,GET,http://localhost:8000/contact/update/1/Pere,1727264773,,200
+76ea8a,127.0.0.1,GET,http://localhost:8000/contact/delete/4,1727264961,,200

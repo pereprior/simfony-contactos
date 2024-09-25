@@ -6701,10 +6701,14 @@
         <argument key="doctrine" type="service_closure" id="doctrine"/>
       </argument>
     </service>
-    <service id=".service_locator.2EmZH2b" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.BNkLHh9" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="App\Controller\PageController::addUser" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\PageController::deleteUser" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\PageController::findUserById" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\PageController::searchUsers" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\PageController::updateUserName" type="service_closure" id=".service_locator.GQZbvNR"/>
         <argument key="App\Kernel::loadRoutes" type="service_closure" id=".service_locator.xUrKPVU"/>
         <argument key="App\Kernel::registerContainerConfiguration" type="service_closure" id=".service_locator.xUrKPVU"/>
         <argument key="App\Kernel::terminate" type="service_closure" id=".service_locator.bRdave9"/>
@@ -6712,6 +6716,10 @@
         <argument key="kernel::registerContainerConfiguration" type="service_closure" id=".service_locator.xUrKPVU"/>
         <argument key="kernel::terminate" type="service_closure" id=".service_locator.bRdave9"/>
         <argument key="App\Controller\PageController:addUser" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\PageController:deleteUser" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\PageController:findUserById" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\PageController:searchUsers" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\PageController:updateUserName" type="service_closure" id=".service_locator.GQZbvNR"/>
         <argument key="kernel:loadRoutes" type="service_closure" id=".service_locator.xUrKPVU"/>
         <argument key="kernel:registerContainerConfiguration" type="service_closure" id=".service_locator.xUrKPVU"/>
         <argument key="kernel:terminate" type="service_closure" id=".service_locator.bRdave9"/>
@@ -7533,12 +7541,12 @@
       <argument type="service" id="EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator"/>
     </service>
     <service id="debug.argument_resolver.service.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">
-      <argument type="service" id=".service_locator.2EmZH2b"/>
+      <argument type="service" id=".service_locator.BNkLHh9"/>
     </service>
     <service id="debug.argument_resolver.default.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver"/>
     <service id="debug.argument_resolver.variadic.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\VariadicValueResolver"/>
     <service id="debug.argument_resolver.not_tagged_controller.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\NotTaggedControllerValueResolver">
-      <argument type="service" id=".service_locator.2EmZH2b"/>
+      <argument type="service" id=".service_locator.BNkLHh9"/>
     </service>
     <service id="debug.traced.messenger.bus.default.inner" class="Symfony\Component\Messenger\MessageBus">
       <argument type="iterator">
@@ -8473,7 +8481,7 @@
     <service id="Symfony\Component\Security\Core\User\UserCheckerInterface" alias="security.user_checker"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.gSv9zYw" public="true"/>
     <service id="twig.loader.filesystem" alias="twig.loader.native_filesystem"/>
-    <service id="argument_resolver.controller_locator" alias=".service_locator.2EmZH2b"/>
+    <service id="argument_resolver.controller_locator" alias=".service_locator.BNkLHh9"/>
     <service id="twig.loader" alias="twig.loader.native_filesystem"/>
     <service id="Psr\Log\LoggerInterface $requestLogger" alias="monolog.logger.request"/>
     <service id="Psr\Log\LoggerInterface $consoleLogger" alias="monolog.logger.console"/>
@@ -8493,7 +8501,7 @@
     <service id="doctrine.id_generator_locator" alias=".service_locator.KLVvNIq"/>
     <service id=".service_locator.Mo0FXEU" alias="service_locator_EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator"/>
     <service id=".service_locator.0GV1BZZ" alias=".service_locator.gSv9zYw"/>
-    <service id=".service_locator.8w0s8T1" alias=".service_locator.2EmZH2b"/>
+    <service id=".service_locator.W_ak4Fk" alias=".service_locator.BNkLHh9"/>
     <service id=".service_locator.wKF4yn1" alias=".service_locator.19_mNxd"/>
     <service id=".service_locator.3l1LkXo" alias=".service_locator.ZWFYuib"/>
     <service id=".service_locator.XW18Svm" alias=".service_locator.TcKhdzh"/>

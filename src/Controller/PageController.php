@@ -10,56 +10,32 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class PageController extends AbstractController
 {
-    #[Route('/page', name: 'app_page')]
+    #[Route('/', name: 'app_page_index')]
     public function index(): Response
-    {
-        return $this->render('page/index.html.twig', [
-            'controller_name' => 'PageController',
-        ]);
-    }
-
-    #[Route('/', name: 'init')]
-    public function init(): Response
     {
         return $this->render("inicio.html.twig", []);
     }
 
-    private array $contacts = [
-        1 => ["nombre" => "Juan Pérez", "telefono" => "524142432", "email" => "juanp@ieselcaminas.org"],
-        2 => ["nombre" => "Ana López", "telefono" => "58958448", "email" => "anita@ieselcaminas.org"],
-        5 => ["nombre" => "Mario Montero", "telefono" => "5326824", "email" => "mario.mont@ieselcaminas.org"],
-        7 => ["nombre" => "Laura Martínez", "telefono" => "42898966", "email" => "lm2000@ieselcaminas.org"],
-        9 => ["nombre" => "Nora Jover", "telefono" => "54565859", "email" => "norajover@ieselcaminas.org"]
-    ];
-
     // Si no ponemos nada, sale 1 por defecto
     #[Route('/contact/{id<\d+>?1}', name: 'contact')]
-    public function contact(int $id): Response
+    public function findUserById(ManagerRegistry $doctrine, $id): Response
     {
-        $result = $this->contacts[$id] ?? null;
-        if ($result) {
-            return $this->render("ficha_contacto.html.twig", ["contacto" => $result]);
-        }
-        return new Response("Contacto no encontrado.");
+        $repository = $doctrine->getRepository(Usuario::class);
+        $contact = $repository->find($id);
+
+        return $this->render("ficha_contacto.html.twig", ["contacto" => $contact]);
     }
 
     #[Route('/contact/search/{text}', name: 'search')]
-    public function search($text): Response
+    public function searchUsers(ManagerRegistry $doctrine, $text): Response
     {
-        $result = array_filter($this->contacts,
-            function ($contact) use ($text) {
-                return str_contains($contact["nombre"], $text);
-            }
-        );
+        $repository = $doctrine->getRepository(Usuario::class);
+        $result = $repository->findByName($text);
 
-        if ($result) {
-            return $this->render("lista_contactos.html.twig", ["contactos" => $result]);
-        } else {
-            return new Response("Contacto no encontrado.");
-        }
+        return $this->render("lista_contactos.html.twig", ["contactos" => $result]);
     }
 
-    #[Route('/contact/add', name: 'add')]
+    #[Route('/contact/add', name: 'add_new_user')]
     public function addUser(ManagerRegistry $doctrine): Response
     {
         $entityManager = $doctrine->getManager();
@@ -77,6 +53,42 @@ class PageController extends AbstractController
         } catch (\Exception $e) {
             return new Response("Error al añadir usuarios");
         }
+    }
+
+    #[Route('/contact/update/{id}/{name}', name: 'update_user_name')]
+    public function updateUserName(ManagerRegistry $doctrine, $id, $name): Response
+    {
+        $entityManager = $doctrine->getManager();
+        $repository = $doctrine->getRepository(Usuario::class);
+        $user = $repository->find($id);
+
+        if ($user) {
+            $user->setNombre($name);
+            try {
+                $entityManager->flush();
+                return $this->render("ficha_contacto.html.twig", ["contacto" => $user]);
+            } catch (\Exception $e) {
+                return new Response("Error al actualizar el nombre");
+            }
+        } else return $this->render("ficha_contacto.html.twig", ["contacto" => $user]);
+    }
+
+    #[Route('/contact/delete/{id}', name: 'delete_user')]
+    public function deleteUser(ManagerRegistry $doctrine, $id): Response
+    {
+        $entityManager = $doctrine->getManager();
+        $repository = $doctrine->getRepository(Usuario::class);
+        $user = $repository->find($id);
+
+        if ($user) {
+            try {
+                $entityManager->remove($user);
+                $entityManager->flush();
+                return new Response("Usuario eliminado");
+            } catch (\Exception $e) {
+                return new Response("Error al eliminar el usuario");
+            }
+        } else return $this->render("ficha_contacto.html.twig", ["contacto" => $user]);
     }
 
 }
