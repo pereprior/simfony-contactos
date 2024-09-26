@@ -1,0 +1,10 @@
+{% extends 'page/base.html.twig' %}
+{% block title %}Users{% endblock %}
+{% block body %}
+    {% if(user) %}
+        <h1>Ficha del usuario</h1>
+        {{ include('partials/user_data.html.twig', {'user': user}) }}
+    {% else %}
+        <p>No se ha encontrado el contacto</p>
+    {% endif %}
+{% endblock %}

@@ -9,7 +9,6 @@ return [
     false, // $matchHost
     [ // $staticRoutes
         '/' => [[['_route' => 'app_page_index', '_controller' => 'App\\Controller\\PageController::index'], null, null, null, false, false, null]],
-        '/contact/add' => [[['_route' => 'add_new_user', '_controller' => 'App\\Controller\\PageController::addUser'], null, null, null, false, false, null]],
         '/_profiler' => [[['_route' => '_profiler_home', '_controller' => 'web_profiler.controller.profiler::homeAction'], null, null, null, true, false, null]],
         '/_profiler/search' => [[['_route' => '_profiler_search', '_controller' => 'web_profiler.controller.profiler::searchAction'], null, null, null, false, false, null]],
         '/_profiler/search_bar' => [[['_route' => '_profiler_search_bar', '_controller' => 'web_profiler.controller.profiler::searchBarAction'], null, null, null, false, false, null]],
@@ -19,43 +18,43 @@ return [
     ],
     [ // $regexpList
         0 => '{^(?'
-                .'|/contact(?'
-                    .'|(?:/(\\d+))?(*:29)'
+                .'|/user(?'
+                    .'|(?:/(\\d+))?(*:26)'
                     .'|/(?'
-                        .'|search/([^/]++)(*:55)'
-                        .'|update/([^/]++)/([^/]++)(*:86)'
-                        .'|delete/([^/]++)(*:108)'
+                        .'|add/([^/]++)/([^/]++)/([^/]++)(?:/(\\d+))?(*:78)'
+                        .'|update/([^/]++)/([^/]++)(*:109)'
+                        .'|delete/([^/]++)(*:132)'
                     .')'
                 .')'
                 .'|/_(?'
-                    .'|error/(\\d+)(?:\\.([^/]++))?(*:149)'
-                    .'|wdt/([^/]++)(*:169)'
+                    .'|error/(\\d+)(?:\\.([^/]++))?(*:173)'
+                    .'|wdt/([^/]++)(*:193)'
                     .'|profiler/([^/]++)(?'
                         .'|/(?'
-                            .'|search/results(*:215)'
-                            .'|router(*:229)'
+                            .'|search/results(*:239)'
+                            .'|router(*:253)'
                             .'|exception(?'
-                                .'|(*:249)'
-                                .'|\\.css(*:262)'
+                                .'|(*:273)'
+                                .'|\\.css(*:286)'
                             .')'
                         .')'
-                        .'|(*:272)'
+                        .'|(*:296)'
                     .')'
                 .')'
             .')/?$}sDu',
     ],
     [ // $dynamicRoutes
-        29 => [[['_route' => 'contact', 'id' => '1', '_controller' => 'App\\Controller\\PageController::findUserById'], ['id'], null, null, false, true, null]],
-        55 => [[['_route' => 'search', '_controller' => 'App\\Controller\\PageController::searchUsers'], ['text'], null, null, false, true, null]],
-        86 => [[['_route' => 'update_user_name', '_controller' => 'App\\Controller\\PageController::updateUserName'], ['id', 'name'], null, null, false, true, null]],
-        108 => [[['_route' => 'delete_user', '_controller' => 'App\\Controller\\PageController::deleteUser'], ['id'], null, null, false, true, null]],
-        149 => [[['_route' => '_preview_error', '_controller' => 'error_controller::preview', '_format' => 'html'], ['code', '_format'], null, null, false, true, null]],
-        169 => [[['_route' => '_wdt', '_controller' => 'web_profiler.controller.profiler::toolbarAction'], ['token'], null, null, false, true, null]],
-        215 => [[['_route' => '_profiler_search_results', '_controller' => 'web_profiler.controller.profiler::searchResultsAction'], ['token'], null, null, false, false, null]],
-        229 => [[['_route' => '_profiler_router', '_controller' => 'web_profiler.controller.router::panelAction'], ['token'], null, null, false, false, null]],
-        249 => [[['_route' => '_profiler_exception', '_controller' => 'web_profiler.controller.exception_panel::body'], ['token'], null, null, false, false, null]],
-        262 => [[['_route' => '_profiler_exception_css', '_controller' => 'web_profiler.controller.exception_panel::stylesheet'], ['token'], null, null, false, false, null]],
-        272 => [
+        26 => [[['_route' => 'user_info', 'id' => '1', '_controller' => 'App\\Controller\\PageController::getUserById'], ['id'], null, null, false, true, null]],
+        78 => [[['_route' => 'add_new_user', 'provincia' => '1', '_controller' => 'App\\Controller\\PageController::addUser'], ['nombre', 'email', 'password', 'provincia'], null, null, false, true, null]],
+        109 => [[['_route' => 'update_user_name', '_controller' => 'App\\Controller\\PageController::updateUserName'], ['id', 'name'], null, null, false, true, null]],
+        132 => [[['_route' => 'delete_user', '_controller' => 'App\\Controller\\PageController::deleteUser'], ['id'], null, null, false, true, null]],
+        173 => [[['_route' => '_preview_error', '_controller' => 'error_controller::preview', '_format' => 'html'], ['code', '_format'], null, null, false, true, null]],
+        193 => [[['_route' => '_wdt', '_controller' => 'web_profiler.controller.profiler::toolbarAction'], ['token'], null, null, false, true, null]],
+        239 => [[['_route' => '_profiler_search_results', '_controller' => 'web_profiler.controller.profiler::searchResultsAction'], ['token'], null, null, false, false, null]],
+        253 => [[['_route' => '_profiler_router', '_controller' => 'web_profiler.controller.router::panelAction'], ['token'], null, null, false, false, null]],
+        273 => [[['_route' => '_profiler_exception', '_controller' => 'web_profiler.controller.exception_panel::body'], ['token'], null, null, false, false, null]],
+        286 => [[['_route' => '_profiler_exception_css', '_controller' => 'web_profiler.controller.exception_panel::stylesheet'], ['token'], null, null, false, false, null]],
+        296 => [
             [['_route' => '_profiler', '_controller' => 'web_profiler.controller.profiler::panelAction'], ['token'], null, null, false, true, null],
             [null, null, null, null, false, false, 0],
         ],

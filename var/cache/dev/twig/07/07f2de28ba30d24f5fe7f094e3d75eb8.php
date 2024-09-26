@@ -24,11 +24,16 @@ class __TwigTemplate_1210fdc3adc3737eedb029e168e8afae extends Template
 
         $this->source = $this->getSourceContext();
 
-        $this->parent = false;
-
         $this->blocks = [
+            'title' => [$this, 'block_title'],
             'body' => [$this, 'block_body'],
         ];
+    }
+
+    protected function doGetParent(array $context)
+    {
+        // line 1
+        return "page/base.html.twig";
     }
 
     protected function doDisplay(array $context, array $blocks = [])
@@ -40,14 +45,8 @@ class __TwigTemplate_1210fdc3adc3737eedb029e168e8afae extends Template
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "template", "page/index.html.twig"));
 
-        // line 1
-        echo "<!DOCTYPE html>
-
-<title>Hello PageController!</title>
-
-";
-        // line 5
-        $this->displayBlock('body', $context, $blocks);
+        $this->parent = $this->loadTemplate("page/base.html.twig", "page/index.html.twig", 1);
+        $this->parent->display($context, array_merge($this->blocks, $blocks));
         
         $__internal_5a27a8ba21ca79b61932376b2fa922d2->leave($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof);
 
@@ -56,6 +55,26 @@ class __TwigTemplate_1210fdc3adc3737eedb029e168e8afae extends Template
 
     }
 
+    // line 2
+    public function block_title($context, array $blocks = [])
+    {
+        $macros = $this->macros;
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2 = $this->extensions["Symfony\\Bundle\\WebProfilerBundle\\Twig\\WebProfilerExtension"];
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2->enter($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "title"));
+
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "title"));
+
+        echo "Users";
+        
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
+
+        
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2->leave($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof);
+
+    }
+
+    // line 3
     public function block_body($context, array $blocks = [])
     {
         $macros = $this->macros;
@@ -65,30 +84,10 @@ class __TwigTemplate_1210fdc3adc3737eedb029e168e8afae extends Template
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "body"));
 
-        // line 6
-        echo "<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
-
-<div class=\"example-wrapper\">
-    <h1>Hello ";
-        // line 12
-        echo twig_escape_filter($this->env, (isset($context["controller_name"]) || array_key_exists("controller_name", $context) ? $context["controller_name"] : (function () { throw new RuntimeError('Variable "controller_name" does not exist.', 12, $this->source); })()), "html", null, true);
-        echo "! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href=\"";
-        // line 16
-        echo twig_escape_filter($this->env, $this->extensions['Symfony\Bridge\Twig\Extension\CodeExtension']->getFileLink("/home/pprior/PhpstormProjects/simfony-contactos/src/Controller/PageController.php", 0), "html", null, true);
-        echo "\">src/Controller/PageController.php</a></code></li>
-        <li>Your template at <code><a href=\"";
-        // line 17
-        echo twig_escape_filter($this->env, $this->extensions['Symfony\Bridge\Twig\Extension\CodeExtension']->getFileLink("/home/pprior/PhpstormProjects/simfony-contactos/templates/page/index.html.twig", 0), "html", null, true);
-        echo "\">templates/page/index.html.twig</a></code></li>
-    </ul>
-</div>
+        // line 4
+        echo "    <h1>Usuarios</h1>
+    <h2>Bienvenido a la web de usuarios.</h2>
+    <p>Página de inicio</p>
 ";
         
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
@@ -103,33 +102,24 @@ class __TwigTemplate_1210fdc3adc3737eedb029e168e8afae extends Template
         return "page/index.html.twig";
     }
 
+    public function isTraitable()
+    {
+        return false;
+    }
+
     public function getDebugInfo()
     {
-        return array (  88 => 17,  84 => 16,  77 => 12,  69 => 6,  50 => 5,  44 => 1,);
+        return array (  88 => 4,  78 => 3,  59 => 2,  36 => 1,);
     }
 
     public function getSourceContext()
     {
-        return new Source("<!DOCTYPE html>
-
-<title>Hello PageController!</title>
-
+        return new Source("{% extends 'page/base.html.twig' %}
+{% block title %}Users{% endblock %}
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
-
-<div class=\"example-wrapper\">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href=\"{{ '/home/pprior/PhpstormProjects/simfony-contactos/src/Controller/PageController.php'|file_link(0) }}\">src/Controller/PageController.php</a></code></li>
-        <li>Your template at <code><a href=\"{{ '/home/pprior/PhpstormProjects/simfony-contactos/templates/page/index.html.twig'|file_link(0) }}\">templates/page/index.html.twig</a></code></li>
-    </ul>
-</div>
-{% endblock %}
-", "page/index.html.twig", "/home/pprior/PhpstormProjects/simfony-contactos/templates/page/index.html.twig");
+    <h1>Usuarios</h1>
+    <h2>Bienvenido a la web de usuarios.</h2>
+    <p>Página de inicio</p>
+{% endblock %}", "page/index.html.twig", "/home/pprior/PhpstormProjects/simfony-contactos/templates/page/index.html.twig");
     }
 }

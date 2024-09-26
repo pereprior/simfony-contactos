@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\UsuarioRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Persistence\ManagerRegistry;
 
 #[ORM\Entity(repositoryClass: UsuarioRepository::class)]
 class Usuario
@@ -16,11 +17,11 @@ class Usuario
     #[ORM\Column(length: 50)]
     private ?string $nombre = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?int $telefono = null;
-
-    #[ORM\Column(length: 100, nullable: true)]
+    #[ORM\Column(length: 100)]
     private ?string $email = null;
+
+    #[ORM\Column(length: 50)]
+    private ?string $password = null;
 
     #[ORM\ManyToOne]
     private ?Provincia $provincia = null;
@@ -42,18 +43,6 @@ class Usuario
         return $this;
     }
 
-    public function getTelefono(): ?int
-    {
-        return $this->telefono;
-    }
-
-    public function setTelefono(int $telefono): self
-    {
-        $this->telefono = $telefono;
-
-        return $this;
-    }
-
     public function getEmail(): ?string
     {
         return $this->email;
@@ -62,6 +51,18 @@ class Usuario
     public function setEmail(?string $email): self
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    public function getPassword(): ?string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): self
+    {
+        $this->password = $password;
 
         return $this;
     }
@@ -77,4 +78,15 @@ class Usuario
 
         return $this;
     }
+
+    public function setProvinciaById(int $id, ManagerRegistry $doctrine): self
+    {
+        $provincia = $doctrine->getRepository(Provincia::class)->find($id);
+
+        if ($provincia)
+            $this->setProvincia($provincia);
+
+        return $this;
+    }
+
 }

@@ -4,11 +4,10 @@
 
 return [
     'app_page_index' => [[], ['_controller' => 'App\\Controller\\PageController::index'], [], [['text', '/']], [], [], []],
-    'contact' => [['id'], ['id' => '1', '_controller' => 'App\\Controller\\PageController::findUserById'], ['id' => '\\d+'], [['variable', '/', '\\d+', 'id', true], ['text', '/contact']], [], [], []],
-    'search' => [['text'], ['_controller' => 'App\\Controller\\PageController::searchUsers'], [], [['variable', '/', '[^/]++', 'text', true], ['text', '/contact/search']], [], [], []],
-    'add_new_user' => [[], ['_controller' => 'App\\Controller\\PageController::addUser'], [], [['text', '/contact/add']], [], [], []],
-    'update_user_name' => [['id', 'name'], ['_controller' => 'App\\Controller\\PageController::updateUserName'], [], [['variable', '/', '[^/]++', 'name', true], ['variable', '/', '[^/]++', 'id', true], ['text', '/contact/update']], [], [], []],
-    'delete_user' => [['id'], ['_controller' => 'App\\Controller\\PageController::deleteUser'], [], [['variable', '/', '[^/]++', 'id', true], ['text', '/contact/delete']], [], [], []],
+    'user_info' => [['id'], ['id' => '1', '_controller' => 'App\\Controller\\PageController::getUserById'], ['id' => '\\d+'], [['variable', '/', '\\d+', 'id', true], ['text', '/user']], [], [], []],
+    'add_new_user' => [['nombre', 'email', 'password', 'provincia'], ['provincia' => '1', '_controller' => 'App\\Controller\\PageController::addUser'], ['provincia' => '\\d+'], [['variable', '/', '\\d+', 'provincia', true], ['variable', '/', '[^/]++', 'password', true], ['variable', '/', '[^/]++', 'email', true], ['variable', '/', '[^/]++', 'nombre', true], ['text', '/user/add']], [], [], []],
+    'update_user_name' => [['id', 'name'], ['_controller' => 'App\\Controller\\PageController::updateUserName'], [], [['variable', '/', '[^/]++', 'name', true], ['variable', '/', '[^/]++', 'id', true], ['text', '/user/update']], [], [], []],
+    'delete_user' => [['id'], ['_controller' => 'App\\Controller\\PageController::deleteUser'], [], [['variable', '/', '[^/]++', 'id', true], ['text', '/user/delete']], [], [], []],
     '_preview_error' => [['code', '_format'], ['_controller' => 'error_controller::preview', '_format' => 'html'], ['code' => '\\d+'], [['variable', '.', '[^/]++', '_format', true], ['variable', '/', '\\d+', 'code', true], ['text', '/_error']], [], [], []],
     '_wdt' => [['token'], ['_controller' => 'web_profiler.controller.profiler::toolbarAction'], [], [['variable', '/', '[^/]++', 'token', true], ['text', '/_wdt']], [], [], []],
     '_profiler_home' => [[], ['_controller' => 'web_profiler.controller.profiler::homeAction'], [], [['text', '/_profiler/']], [], [], []],

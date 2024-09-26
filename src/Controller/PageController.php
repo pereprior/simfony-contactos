@@ -13,39 +13,30 @@ class PageController extends AbstractController
     #[Route('/', name: 'app_page_index')]
     public function index(): Response
     {
-        return $this->render("inicio.html.twig", []);
+        return $this->render("page/index.html.twig", []);
     }
 
     // Si no ponemos nada, sale 1 por defecto
-    #[Route('/contact/{id<\d+>?1}', name: 'contact')]
-    public function findUserById(ManagerRegistry $doctrine, $id): Response
+    #[Route('/user/{id<\d+>?1}', name: 'user_info')]
+    public function getUserById(ManagerRegistry $doctrine, $id): Response
     {
         $repository = $doctrine->getRepository(Usuario::class);
-        $contact = $repository->find($id);
+        $user = $repository->find($id);
 
-        return $this->render("ficha_contacto.html.twig", ["contacto" => $contact]);
+        return $this->render("page/user_info.html.twig", ["user" => $user]);
     }
 
-    #[Route('/contact/search/{text}', name: 'search')]
-    public function searchUsers(ManagerRegistry $doctrine, $text): Response
-    {
-        $repository = $doctrine->getRepository(Usuario::class);
-        $result = $repository->findByName($text);
-
-        return $this->render("lista_contactos.html.twig", ["contactos" => $result]);
-    }
-
-    #[Route('/contact/add', name: 'add_new_user')]
-    public function addUser(ManagerRegistry $doctrine): Response
+    #[Route('/user/add/{nombre}/{email}/{password}/{provincia<\d+>?1}', name: 'add_new_user')]
+    public function addUser(ManagerRegistry $doctrine, $nombre, $email, $password, $provincia): Response
     {
         $entityManager = $doctrine->getManager();
-        /*foreach ($this->contacts as $contact) {
-            $user = new Usuario();
-            $user->setNombre($contact["nombre"]);
-            $user->setTelefono($contact["telefono"]);
-            $user->setEmail($contact["email"]);
-            $entityManager->persist($user);
-        }*/
+        $user = new Usuario();
+        $user->setNombre($nombre);
+        $user->setEmail($email);
+        $user->setPassword($password);
+        $user->setProvinciaById($provincia, $doctrine);
+
+        $entityManager->persist($user);
 
         try {
             $entityManager->flush();
@@ -55,7 +46,7 @@ class PageController extends AbstractController
         }
     }
 
-    #[Route('/contact/update/{id}/{name}', name: 'update_user_name')]
+    #[Route('/user/update/{id}/{name}', name: 'update_user_name')]
     public function updateUserName(ManagerRegistry $doctrine, $id, $name): Response
     {
         $entityManager = $doctrine->getManager();
@@ -66,14 +57,16 @@ class PageController extends AbstractController
             $user->setNombre($name);
             try {
                 $entityManager->flush();
-                return $this->render("ficha_contacto.html.twig", ["contacto" => $user]);
+                return $this->render("page/user_info.html.twig", ["user" => $user]);
             } catch (\Exception $e) {
                 return new Response("Error al actualizar el nombre");
             }
-        } else return $this->render("ficha_contacto.html.twig", ["contacto" => $user]);
+        }
+
+        return new Response("Usuario no encontrado");
     }
 
-    #[Route('/contact/delete/{id}', name: 'delete_user')]
+    #[Route('/user/delete/{id}', name: 'delete_user')]
     public function deleteUser(ManagerRegistry $doctrine, $id): Response
     {
         $entityManager = $doctrine->getManager();
@@ -88,16 +81,7 @@ class PageController extends AbstractController
             } catch (\Exception $e) {
                 return new Response("Error al eliminar el usuario");
             }
-        } else return $this->render("ficha_contacto.html.twig", ["contacto" => $user]);
-    }
-
-    #[Route('/contact/provincia/{id}', name: 'provincia')]
-    public function searchByProvincia(ManagerRegistry $doctrine, $id): Response
-    {
-        $repositorio = $doctrine->getRepository(Usuario::class);
-        $contacto = $repositorio->find($id);
-        $nombreProvincia = $contacto->getProvincia()->getNombre();
-        return new Response("El contacto $id vive en la provincia de $nombreProvincia");
+        } else return $this->render("page/user_info.html.twig", ["user" => $user]);
     }
 
 }
