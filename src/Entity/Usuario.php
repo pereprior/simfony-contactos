@@ -22,6 +22,9 @@ class Usuario
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $email = null;
 
+    #[ORM\ManyToOne]
+    private ?Provincia $provincia = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -59,6 +62,18 @@ class Usuario
     public function setEmail(?string $email): self
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    public function getProvincia(): ?Provincia
+    {
+        return $this->provincia;
+    }
+
+    public function setProvincia(?Provincia $provincia): self
+    {
+        $this->provincia = $provincia;
 
         return $this;
     }

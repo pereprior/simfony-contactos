@@ -39,13 +39,13 @@ class PageController extends AbstractController
     public function addUser(ManagerRegistry $doctrine): Response
     {
         $entityManager = $doctrine->getManager();
-        foreach ($this->contacts as $contact) {
+        /*foreach ($this->contacts as $contact) {
             $user = new Usuario();
             $user->setNombre($contact["nombre"]);
             $user->setTelefono($contact["telefono"]);
             $user->setEmail($contact["email"]);
             $entityManager->persist($user);
-        }
+        }*/
 
         try {
             $entityManager->flush();
@@ -89,6 +89,15 @@ class PageController extends AbstractController
                 return new Response("Error al eliminar el usuario");
             }
         } else return $this->render("ficha_contacto.html.twig", ["contacto" => $user]);
+    }
+
+    #[Route('/contact/provincia/{id}', name: 'provincia')]
+    public function searchByProvincia(ManagerRegistry $doctrine, $id): Response
+    {
+        $repositorio = $doctrine->getRepository(Usuario::class);
+        $contacto = $repositorio->find($id);
+        $nombreProvincia = $contacto->getProvincia()->getNombre();
+        return new Response("El contacto $id vive en la provincia de $nombreProvincia");
     }
 
 }
