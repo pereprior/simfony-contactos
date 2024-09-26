@@ -49,7 +49,7 @@ class UsuarioRepository extends ServiceEntityRepository
         return $qb->getResult();
     }
 
-    public function olderThan($age): array
+    /*public function olderThan($age): array
     {
         $qb = $this->createQueryBuilder('p')
             ->andWhere('p.edad > :edad')
@@ -57,7 +57,7 @@ class UsuarioRepository extends ServiceEntityRepository
             ->getQuery();
 
         return $qb->getResult();
-    }
+    }*/
 
 //    /**
 //     * @return Usuario[] Returns an array of Usuario objects
