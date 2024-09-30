@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\UsuarioRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UsuarioRepository::class)]
 class Usuario
@@ -18,7 +19,9 @@ class Usuario
     private ?string $nombre = null;
 
     #[ORM\Column(length: 100)]
-    private ?string $email = null;
+    #[Assert\NotBlank]
+    #[Assert\Email(message: 'El email {{ value }} no es válido')]
+    private string $email = '';
 
     #[ORM\Column(length: 50)]
     private ?string $password = null;

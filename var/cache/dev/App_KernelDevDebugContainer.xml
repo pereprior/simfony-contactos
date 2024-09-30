@@ -355,12 +355,25 @@
       <tag name="controller.service_arguments"/>
       <tag name="routing.route_loader"/>
     </service>
-    <service id="App\Controller\PageController" class="App\Controller\PageController" public="true" autowire="true" autoconfigure="true">
+    <service id="App\Controller\ProvinciaController" class="App\Controller\ProvinciaController" public="true" autowire="true" autoconfigure="true">
       <tag name="controller.service_arguments"/>
       <tag name="container.service_subscriber"/>
       <call method="setContainer">
-        <argument type="service" id=".service_locator.jIxfAsi.App\Controller\PageController"/>
+        <argument type="service" id=".service_locator.jIxfAsi.App\Controller\ProvinciaController"/>
       </call>
+    </service>
+    <service id="App\Controller\UserController" class="App\Controller\UserController" public="true" autowire="true" autoconfigure="true">
+      <tag name="controller.service_arguments"/>
+      <tag name="container.service_subscriber"/>
+      <call method="setContainer">
+        <argument type="service" id=".service_locator.jIxfAsi.App\Controller\UserController"/>
+      </call>
+    </service>
+    <service id="App\Form\ProvinciaType" class="App\Form\ProvinciaType" autowire="true" autoconfigure="true">
+      <tag name="form.type"/>
+    </service>
+    <service id="App\Form\UsuarioType" class="App\Form\UsuarioType" autowire="true" autoconfigure="true">
+      <tag name="form.type"/>
     </service>
     <service id="App\Repository\ProvinciaRepository" class="App\Repository\ProvinciaRepository" autowire="true" autoconfigure="true">
       <tag name="doctrine.repository_service"/>
@@ -1109,10 +1122,13 @@
       <argument type="service" id="form.registry"/>
       <argument type="collection">
         <argument>Symfony\Component\Form\Extension\Core\Type</argument>
+        <argument>App\Form</argument>
         <argument>Symfony\Bridge\Doctrine\Form\Type</argument>
         <argument>EasyCorp\Bundle\EasyAdminBundle\Form\Type</argument>
       </argument>
       <argument type="collection">
+        <argument>App\Form\ProvinciaType</argument>
+        <argument>App\Form\UsuarioType</argument>
         <argument>Symfony\Component\Form\Extension\Core\Type\FormType</argument>
         <argument>Symfony\Component\Form\Extension\Core\Type\ChoiceType</argument>
         <argument>Symfony\Component\Form\Extension\Core\Type\FileType</argument>
@@ -3197,7 +3213,7 @@
       <argument type="service" id="form.registry"/>
     </service>
     <service id="form.extension" class="Symfony\Component\Form\Extension\DependencyInjection\DependencyInjectionExtension">
-      <argument type="service" id=".service_locator.ZWFYuib"/>
+      <argument type="service" id=".service_locator.Z279lVR"/>
       <argument type="collection">
         <argument key="Symfony\Component\Form\Extension\Core\Type\FormType" type="iterator">
           <argument type="service" id="form.type_extension.form.transformation_failure_handling"/>
@@ -6281,9 +6297,16 @@
       <tag name="assets.package" package="easyadmin.assets.package"/>
       <argument type="service" id="request_stack"/>
     </service>
-    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\PageController" class="App\Controller\PageController" autowire="true" abstract="true"/>
-    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\PageController" class="App\Controller\PageController" autowire="true" abstract="true"/>
-    <service id=".abstract.instanceof.App\Controller\PageController" class="App\Controller\PageController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\ProvinciaController" class="App\Controller\ProvinciaController" autowire="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\ProvinciaController" class="App\Controller\ProvinciaController" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Controller\ProvinciaController" class="App\Controller\ProvinciaController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\UserController" class="App\Controller\UserController" autowire="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\UserController" class="App\Controller\UserController" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Controller\UserController" class="App\Controller\UserController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Component\Form\FormTypeInterface.0.App\Form\ProvinciaType" class="App\Form\ProvinciaType" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Form\ProvinciaType" class="App\Form\ProvinciaType" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Component\Form\FormTypeInterface.0.App\Form\UsuarioType" class="App\Form\UsuarioType" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Form\UsuarioType" class="App\Form\UsuarioType" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\ProvinciaRepository" class="App\Repository\ProvinciaRepository" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Repository\ProvinciaRepository" class="App\Repository\ProvinciaRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\UsuarioRepository" class="App\Repository\UsuarioRepository" autowire="true" abstract="true"/>
@@ -6707,23 +6730,42 @@
         <argument key="doctrine" type="service_closure" id="doctrine"/>
       </argument>
     </service>
-    <service id=".service_locator.wCFWE9o" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.N0lbekA" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
-        <argument key="App\Controller\PageController::addUser" type="service_closure" id=".service_locator.GQZbvNR"/>
-        <argument key="App\Controller\PageController::deleteUser" type="service_closure" id=".service_locator.GQZbvNR"/>
-        <argument key="App\Controller\PageController::getUserById" type="service_closure" id=".service_locator.GQZbvNR"/>
-        <argument key="App\Controller\PageController::updateUserName" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="doctrine" type="service_closure" id="doctrine"/>
+        <argument key="form" type="service_closure" id=".errored..service_locator.N0lbekA.Symfony\Component\Form\FormInterface"/>
+      </argument>
+    </service>
+    <service id=".service_locator.tCOIYCK" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="App\Controller\ProvinciaController::addProvincia" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\ProvinciaController::deleteUser" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\ProvinciaController::getProvinciaById" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\ProvinciaController::saveProvincia" type="service_closure" id=".service_locator.N0lbekA"/>
+        <argument key="App\Controller\ProvinciaController::updateUserName" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\UserController::addUser" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\UserController::deleteUser" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\UserController::getUserById" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\UserController::saveUser" type="service_closure" id=".service_locator.N0lbekA"/>
+        <argument key="App\Controller\UserController::updateUserName" type="service_closure" id=".service_locator.GQZbvNR"/>
         <argument key="App\Kernel::loadRoutes" type="service_closure" id=".service_locator.xUrKPVU"/>
         <argument key="App\Kernel::registerContainerConfiguration" type="service_closure" id=".service_locator.xUrKPVU"/>
         <argument key="App\Kernel::terminate" type="service_closure" id=".service_locator.bRdave9"/>
         <argument key="kernel::loadRoutes" type="service_closure" id=".service_locator.xUrKPVU"/>
         <argument key="kernel::registerContainerConfiguration" type="service_closure" id=".service_locator.xUrKPVU"/>
         <argument key="kernel::terminate" type="service_closure" id=".service_locator.bRdave9"/>
-        <argument key="App\Controller\PageController:addUser" type="service_closure" id=".service_locator.GQZbvNR"/>
-        <argument key="App\Controller\PageController:deleteUser" type="service_closure" id=".service_locator.GQZbvNR"/>
-        <argument key="App\Controller\PageController:getUserById" type="service_closure" id=".service_locator.GQZbvNR"/>
-        <argument key="App\Controller\PageController:updateUserName" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\ProvinciaController:addProvincia" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\ProvinciaController:deleteUser" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\ProvinciaController:getProvinciaById" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\ProvinciaController:saveProvincia" type="service_closure" id=".service_locator.N0lbekA"/>
+        <argument key="App\Controller\ProvinciaController:updateUserName" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\UserController:addUser" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\UserController:deleteUser" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\UserController:getUserById" type="service_closure" id=".service_locator.GQZbvNR"/>
+        <argument key="App\Controller\UserController:saveUser" type="service_closure" id=".service_locator.N0lbekA"/>
+        <argument key="App\Controller\UserController:updateUserName" type="service_closure" id=".service_locator.GQZbvNR"/>
         <argument key="kernel:loadRoutes" type="service_closure" id=".service_locator.xUrKPVU"/>
         <argument key="kernel:registerContainerConfiguration" type="service_closure" id=".service_locator.xUrKPVU"/>
         <argument key="kernel:terminate" type="service_closure" id=".service_locator.bRdave9"/>
@@ -6908,9 +6950,11 @@
       <argument type="service" id="debug.argument_resolver.not_tagged_controller.inner"/>
       <argument type="service" id="debug.stopwatch"/>
     </service>
-    <service id=".service_locator.ZWFYuib" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.Z279lVR" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
+        <argument key="App\Form\ProvinciaType" type="service_closure" id="App\Form\ProvinciaType"/>
+        <argument key="App\Form\UsuarioType" type="service_closure" id="App\Form\UsuarioType"/>
         <argument key="EasyCorp\Bundle\EasyAdminBundle\Form\Type\CrudFormType" type="service_closure" id="EasyCorp\Bundle\EasyAdminBundle\Form\Type\CrudFormType"/>
         <argument key="EasyCorp\Bundle\EasyAdminBundle\Form\Type\FileUploadType" type="service_closure" id="EasyCorp\Bundle\EasyAdminBundle\Form\Type\FileUploadType"/>
         <argument key="EasyCorp\Bundle\EasyAdminBundle\Form\Type\FiltersFormType" type="service_closure" id="EasyCorp\Bundle\EasyAdminBundle\Form\Type\FiltersFormType"/>
@@ -7274,9 +7318,15 @@
         <argument key="twig" type="service_closure" id="twig" on-invalid="ignore"/>
       </argument>
     </service>
-    <service id=".service_locator.jIxfAsi.App\Controller\PageController" class="Symfony\Component\DependencyInjection\ServiceLocator">
-      <tag name="container.service_locator_context" id="App\Controller\PageController"/>
-      <argument>App\Controller\PageController</argument>
+    <service id=".service_locator.jIxfAsi.App\Controller\ProvinciaController" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator_context" id="App\Controller\ProvinciaController"/>
+      <argument>App\Controller\ProvinciaController</argument>
+      <argument type="service" id="service_container"/>
+      <factory service=".service_locator.jIxfAsi" method="withContext"/>
+    </service>
+    <service id=".service_locator.jIxfAsi.App\Controller\UserController" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator_context" id="App\Controller\UserController"/>
+      <argument>App\Controller\UserController</argument>
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.jIxfAsi" method="withContext"/>
     </service>
@@ -7546,12 +7596,12 @@
       <argument type="service" id="EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator"/>
     </service>
     <service id="debug.argument_resolver.service.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">
-      <argument type="service" id=".service_locator.wCFWE9o"/>
+      <argument type="service" id=".service_locator.tCOIYCK"/>
     </service>
     <service id="debug.argument_resolver.default.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver"/>
     <service id="debug.argument_resolver.variadic.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\VariadicValueResolver"/>
     <service id="debug.argument_resolver.not_tagged_controller.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\NotTaggedControllerValueResolver">
-      <argument type="service" id=".service_locator.wCFWE9o"/>
+      <argument type="service" id=".service_locator.tCOIYCK"/>
     </service>
     <service id="debug.traced.messenger.bus.default.inner" class="Symfony\Component\Messenger\MessageBus">
       <argument type="iterator">
@@ -7580,6 +7630,7 @@
     </service>
     <service id=".errored..service_locator.bRdave9.Symfony\Component\HttpFoundation\Response" class="Symfony\Component\HttpFoundation\Response"/>
     <service id=".errored..service_locator.xUrKPVU.Symfony\Component\Config\Loader\LoaderInterface" class="Symfony\Component\Config\Loader\LoaderInterface"/>
+    <service id=".errored..service_locator.N0lbekA.Symfony\Component\Form\FormInterface" class="Symfony\Component\Form\FormInterface"/>
     <service id=".console.command.about.lazy" class="Symfony\Component\Console\Command\LazyCommand">
       <argument>about</argument>
       <argument type="collection"/>
@@ -8486,7 +8537,7 @@
     <service id="Symfony\Component\Security\Core\User\UserCheckerInterface" alias="security.user_checker"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.gSv9zYw" public="true"/>
     <service id="twig.loader.filesystem" alias="twig.loader.native_filesystem"/>
-    <service id="argument_resolver.controller_locator" alias=".service_locator.wCFWE9o"/>
+    <service id="argument_resolver.controller_locator" alias=".service_locator.tCOIYCK"/>
     <service id="twig.loader" alias="twig.loader.native_filesystem"/>
     <service id="Psr\Log\LoggerInterface $requestLogger" alias="monolog.logger.request"/>
     <service id="Psr\Log\LoggerInterface $consoleLogger" alias="monolog.logger.console"/>
@@ -8506,9 +8557,10 @@
     <service id="doctrine.id_generator_locator" alias=".service_locator.KLVvNIq"/>
     <service id=".service_locator.Mo0FXEU" alias="service_locator_EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator"/>
     <service id=".service_locator.0GV1BZZ" alias=".service_locator.gSv9zYw"/>
-    <service id=".service_locator.s3rcDP4" alias=".service_locator.wCFWE9o"/>
+    <service id=".service_locator.Zch1i10" alias=".service_locator.N0lbekA"/>
+    <service id=".service_locator.mhHPe7e" alias=".service_locator.tCOIYCK"/>
     <service id=".service_locator.wKF4yn1" alias=".service_locator.19_mNxd"/>
-    <service id=".service_locator.3l1LkXo" alias=".service_locator.ZWFYuib"/>
+    <service id=".service_locator.cqhEfz5" alias=".service_locator.Z279lVR"/>
     <service id=".service_locator.XW18Svm" alias=".service_locator.TcKhdzh"/>
     <service id=".service_locator.O24_MAy" alias=".service_locator.yY.p4P7"/>
     <service id=".service_locator._eRAkJb" alias=".service_locator.jIxfAsi"/>
@@ -8562,6 +8614,7 @@
     <service id=".service_locator.FatRZu2" alias=".service_locator.bRdave9"/>
     <service id=".service_locator.uo5c0SP" alias=".service_locator.xUrKPVU"/>
     <service id=".service_locator.FPFiL9q" alias=".service_locator.GQZbvNR"/>
+    <service id=".service_locator.U0h0fYQ" alias=".service_locator.N0lbekA"/>
     <service id=".service_locator.eAaUVIw" alias=".service_locator.jIxfAsi"/>
     <service id=".service_locator.u6DWx23" alias=".service_locator.cXsfP3P"/>
     <service id=".service_locator.pFwChgS" alias=".service_locator.UkE3SaZ"/>

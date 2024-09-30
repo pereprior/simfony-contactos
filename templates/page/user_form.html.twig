@@ -1,0 +1,24 @@
+{% extends 'page/base.html.twig' %}
+{% block title %}Users{% endblock %}
+{% block body %}
+    <h1>Ficha del usuario</h1><br>
+    {{ form_start(form) }}
+        <div class="row">
+            <div class="col">
+                {{ form_row(form.nombre) }}
+            </div>
+            <div class="col">
+                {{ form_row(form.provincia) }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                {{ form_row(form.email) }}
+            </div>
+            <div class="col">
+                {{ form_row(form.password) }}
+            </div>
+        </div>
+    {{ form_end(form) }}
+{% endblock %}

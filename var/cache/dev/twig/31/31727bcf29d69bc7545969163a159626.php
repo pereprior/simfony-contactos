@@ -49,7 +49,7 @@ class __TwigTemplate_14fe225a46136d25834af0dcd1ada042 extends Template
         // line 3
         echo twig_escape_filter($this->env, twig_get_attribute($this->env, $this->source, (isset($context["user"]) || array_key_exists("user", $context) ? $context["user"] : (function () { throw new RuntimeError('Variable "user" does not exist.', 3, $this->source); })()), "email", [], "any", false, false, false, 3), "html", null, true);
         echo "</li>
-    <li><strong>Provincia: </strong>";
+    <li><strong>Contraseña: </strong>";
         // line 4
         echo twig_escape_filter($this->env, twig_get_attribute($this->env, $this->source, twig_get_attribute($this->env, $this->source, (isset($context["user"]) || array_key_exists("user", $context) ? $context["user"] : (function () { throw new RuntimeError('Variable "user" does not exist.', 4, $this->source); })()), "provincia", [], "any", false, false, false, 4), "nombre", [], "any", false, false, false, 4), "html", null, true);
         echo "</li>
@@ -82,7 +82,7 @@ class __TwigTemplate_14fe225a46136d25834af0dcd1ada042 extends Template
         return new Source("<ul>
     <li><strong>{{ user.nombre }}</strong></li>
     <li><strong>Correo: </strong>{{ user.email }}</li>
-    <li><strong>Provincia: </strong>{{ user.provincia.nombre }}</li>
+    <li><strong>Contraseña: </strong>{{ user.provincia.nombre }}</li>
 </ul><br>", "partials/user_data.html.twig", "/home/pprior/PhpstormProjects/simfony-contactos/templates/partials/user_data.html.twig");
     }
 }
