@@ -2,9 +2,7 @@
 
 namespace App\Controller;
 use App\Entity\Provincia;
-use App\Entity\Usuario;
 use App\Form\ProvinciaType;
-use App\Form\UsuarioType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
