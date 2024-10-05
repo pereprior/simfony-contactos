@@ -8,7 +8,7 @@
 return [
     false, // $matchHost
     [ // $staticRoutes
-        '/provincia/add' => [[['_route' => 'add_new_provincia', '_controller' => 'App\\Controller\\ProvinciaController::addProvincia'], null, null, null, false, false, null]],
+        '/job/add' => [[['_route' => 'add_new_job', '_controller' => 'App\\Controller\\JobController::addJob'], null, null, null, false, false, null]],
         '/' => [[['_route' => 'app_page_index', '_controller' => 'App\\Controller\\UserController::index'], null, null, null, false, false, null]],
         '/user/add' => [[['_route' => 'add_new_user', '_controller' => 'App\\Controller\\UserController::addUser'], null, null, null, false, false, null]],
         '/_profiler' => [[['_route' => '_profiler_home', '_controller' => 'web_profiler.controller.profiler::homeAction'], null, null, null, true, false, null]],
@@ -20,51 +20,51 @@ return [
     ],
     [ // $regexpList
         0 => '{^(?'
-                .'|/provincia(?'
-                    .'|(?:/(\\d+))?(*:31)'
+                .'|/job(?'
+                    .'|(?:/(\\d+))?(*:25)'
                     .'|/(?'
-                        .'|update/([^/]++)(*:57)'
-                        .'|delete/([^/]++)(*:79)'
+                        .'|update/([^/]++)(*:51)'
+                        .'|delete/([^/]++)(*:73)'
                     .')'
                 .')'
                 .'|/user(?'
-                    .'|(?:/(\\d+))?(*:107)'
+                    .'|(?:/(\\d+))?(*:101)'
                     .'|/(?'
-                        .'|update/([^/]++)(*:134)'
-                        .'|delete/([^/]++)(*:157)'
+                        .'|update/([^/]++)(*:128)'
+                        .'|delete/([^/]++)(*:151)'
                     .')'
                 .')'
                 .'|/_(?'
-                    .'|error/(\\d+)(?:\\.([^/]++))?(*:198)'
-                    .'|wdt/([^/]++)(*:218)'
+                    .'|error/(\\d+)(?:\\.([^/]++))?(*:192)'
+                    .'|wdt/([^/]++)(*:212)'
                     .'|profiler/([^/]++)(?'
                         .'|/(?'
-                            .'|search/results(*:264)'
-                            .'|router(*:278)'
+                            .'|search/results(*:258)'
+                            .'|router(*:272)'
                             .'|exception(?'
-                                .'|(*:298)'
-                                .'|\\.css(*:311)'
+                                .'|(*:292)'
+                                .'|\\.css(*:305)'
                             .')'
                         .')'
-                        .'|(*:321)'
+                        .'|(*:315)'
                     .')'
                 .')'
             .')/?$}sDu',
     ],
     [ // $dynamicRoutes
-        31 => [[['_route' => 'provincia_info', 'id' => '1', '_controller' => 'App\\Controller\\ProvinciaController::getProvinciaById'], ['id'], null, null, false, true, null]],
-        57 => [[['_route' => 'update_provincia_name', '_controller' => 'App\\Controller\\ProvinciaController::updateUserName'], ['id'], null, null, false, true, null]],
-        79 => [[['_route' => 'delete_provincia', '_controller' => 'App\\Controller\\ProvinciaController::deleteUser'], ['id'], null, null, false, true, null]],
-        107 => [[['_route' => 'user_info', 'id' => '1', '_controller' => 'App\\Controller\\UserController::getUserById'], ['id'], null, null, false, true, null]],
-        134 => [[['_route' => 'update_user_name', '_controller' => 'App\\Controller\\UserController::updateUserName'], ['id'], null, null, false, true, null]],
-        157 => [[['_route' => 'delete_user', '_controller' => 'App\\Controller\\UserController::deleteUser'], ['id'], null, null, false, true, null]],
-        198 => [[['_route' => '_preview_error', '_controller' => 'error_controller::preview', '_format' => 'html'], ['code', '_format'], null, null, false, true, null]],
-        218 => [[['_route' => '_wdt', '_controller' => 'web_profiler.controller.profiler::toolbarAction'], ['token'], null, null, false, true, null]],
-        264 => [[['_route' => '_profiler_search_results', '_controller' => 'web_profiler.controller.profiler::searchResultsAction'], ['token'], null, null, false, false, null]],
-        278 => [[['_route' => '_profiler_router', '_controller' => 'web_profiler.controller.router::panelAction'], ['token'], null, null, false, false, null]],
-        298 => [[['_route' => '_profiler_exception', '_controller' => 'web_profiler.controller.exception_panel::body'], ['token'], null, null, false, false, null]],
-        311 => [[['_route' => '_profiler_exception_css', '_controller' => 'web_profiler.controller.exception_panel::stylesheet'], ['token'], null, null, false, false, null]],
-        321 => [
+        25 => [[['_route' => 'job_info', 'id' => '1', '_controller' => 'App\\Controller\\JobController::getJobById'], ['id'], null, null, false, true, null]],
+        51 => [[['_route' => 'update_job_name', '_controller' => 'App\\Controller\\JobController::updateJobName'], ['id'], null, null, false, true, null]],
+        73 => [[['_route' => 'delete_job', '_controller' => 'App\\Controller\\JobController::deleteJob'], ['id'], null, null, false, true, null]],
+        101 => [[['_route' => 'user_info', 'id' => '1', '_controller' => 'App\\Controller\\UserController::getUserById'], ['id'], null, null, false, true, null]],
+        128 => [[['_route' => 'update_user_name', '_controller' => 'App\\Controller\\UserController::updateUserName'], ['id'], null, null, false, true, null]],
+        151 => [[['_route' => 'delete_user', '_controller' => 'App\\Controller\\UserController::deleteUser'], ['id'], null, null, false, true, null]],
+        192 => [[['_route' => '_preview_error', '_controller' => 'error_controller::preview', '_format' => 'html'], ['code', '_format'], null, null, false, true, null]],
+        212 => [[['_route' => '_wdt', '_controller' => 'web_profiler.controller.profiler::toolbarAction'], ['token'], null, null, false, true, null]],
+        258 => [[['_route' => '_profiler_search_results', '_controller' => 'web_profiler.controller.profiler::searchResultsAction'], ['token'], null, null, false, false, null]],
+        272 => [[['_route' => '_profiler_router', '_controller' => 'web_profiler.controller.router::panelAction'], ['token'], null, null, false, false, null]],
+        292 => [[['_route' => '_profiler_exception', '_controller' => 'web_profiler.controller.exception_panel::body'], ['token'], null, null, false, false, null]],
+        305 => [[['_route' => '_profiler_exception_css', '_controller' => 'web_profiler.controller.exception_panel::stylesheet'], ['token'], null, null, false, false, null]],
+        315 => [
             [['_route' => '_profiler', '_controller' => 'web_profiler.controller.profiler::panelAction'], ['token'], null, null, false, true, null],
             [null, null, null, null, false, false, 0],
         ],

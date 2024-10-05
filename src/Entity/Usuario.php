@@ -24,10 +24,10 @@ class Usuario
     private string $email = '';
 
     #[ORM\Column(length: 50)]
-    private ?string $password = null;
+    private ?string $telefono = null;
 
     #[ORM\ManyToOne]
-    private ?Provincia $provincia = null;
+    private ?Job $job = null;
 
     public function getId(): ?int
     {
@@ -58,36 +58,26 @@ class Usuario
         return $this;
     }
 
-    public function getPassword(): ?string
+    public function getTelefono(): ?string
     {
-        return $this->password;
+        return $this->telefono;
     }
 
-    public function setPassword(string $password): self
+    public function setTelefono(string $telefono): self
     {
-        $this->password = $password;
+        $this->telefono = $telefono;
 
         return $this;
     }
 
-    public function getProvincia(): ?Provincia
+    public function getJob(): ?Job
     {
-        return $this->provincia;
+        return $this->job;
     }
 
-    public function setProvincia(?Provincia $provincia): self
+    public function setJob(?Job $job): self
     {
-        $this->provincia = $provincia;
-
-        return $this;
-    }
-
-    public function setProvinciaById(int $id, ManagerRegistry $doctrine): self
-    {
-        $provincia = $doctrine->getRepository(Provincia::class)->find($id);
-
-        if ($provincia)
-            $this->setProvincia($provincia);
+        $this->job = $job;
 
         return $this;
     }

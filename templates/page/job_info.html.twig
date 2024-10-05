@@ -1,0 +1,10 @@
+{% extends 'page/base.html.twig' %}
+{% block title %}Puesto de trabajo{% endblock %}
+{% block body %}
+    {% if(job) %}
+        <h1>Ficha del puesto de trabajo</h1>
+        {{ include('partials/job_data.html.twig', {'job': job}) }}
+    {% else %}
+        <p>No se ha encontrado el puesto de trabajo</p>
+    {% endif %}
+{% endblock %}
