@@ -37,3 +37,4 @@ abb6f5,127.0.0.1,GET,http://localhost:8000/login,1728281753,,200
 b410da,127.0.0.1,GET,http://localhost:8000/login,1728281862,,200
 043fe0,127.0.0.1,POST,http://localhost:8000/login,1728281871,,302
 55157b,127.0.0.1,GET,http://localhost:8000/,1728281871,,200
+4afcb4,127.0.0.1,GET,http://localhost:8000/register,1728282128,,200

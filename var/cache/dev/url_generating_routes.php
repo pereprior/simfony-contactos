@@ -9,6 +9,7 @@ return [
     'delete_job' => [['id'], ['_controller' => 'App\\Controller\\JobController::deleteJob'], [], [['variable', '/', '[^/]++', 'id', true], ['text', '/job/delete']], [], [], []],
     'login' => [[], ['_controller' => 'App\\Controller\\LoginController::index'], [], [['text', '/login']], [], [], []],
     'app_register' => [[], ['_controller' => 'App\\Controller\\RegistrationController::register'], [], [['text', '/register']], [], [], []],
+    'app_logout' => [[], ['_controller' => 'App\\Controller\\SecurityController::logout'], [], [['text', '/logout']], [], [], []],
     'app_page_index' => [[], ['_controller' => 'App\\Controller\\UserController::index'], [], [['text', '/']], [], [], []],
     'user_info' => [['id'], ['id' => '1', '_controller' => 'App\\Controller\\UserController::getUserById'], ['id' => '\\d+'], [['variable', '/', '\\d+', 'id', true], ['text', '/user']], [], [], []],
     'add_new_user' => [[], ['_controller' => 'App\\Controller\\UserController::addUser'], [], [['text', '/user/add']], [], [], []],
