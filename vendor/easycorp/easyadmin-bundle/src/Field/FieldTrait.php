@@ -8,6 +8,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Option\TextAlign;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\AssetDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto;
+use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Contracts\Translation\TranslatableInterface;
 
 /**
@@ -20,6 +21,11 @@ trait FieldTrait
     private function __construct()
     {
         $this->dto = new FieldDto();
+    }
+
+    public function __clone(): void
+    {
+        $this->dto = clone $this->dto;
     }
 
     public function setFieldFqcn(string $fieldFqcn): self
@@ -129,6 +135,35 @@ trait FieldTrait
         return $this;
     }
 
+    /**
+     * Sets the value of a custom HTML attribute that will be added when rendering the field.
+     * E.g. setAttribute('data-foo', 'bar') will render a 'data-foo="bar"' attribute in HTML.
+     * It's a shortcut for the equivalent setFormTypeOption('attr.data-foo', 'bar).
+     */
+    public function setHtmlAttribute(string $attributeName, $attributeValue): self
+    {
+        if (str_contains($attributeName, '.')) {
+            throw new \InvalidArgumentException(sprintf('Field attributes must be defined as pairs of "(string) key => (scalar) value". That\'s why the attribute name ("%s") cannot use the "dot notation" with the "." character to create nested attributes.', $attributeName));
+        }
+
+        if (!\is_scalar($attributeValue)) {
+            throw new \InvalidArgumentException(sprintf('The value of the "%s" attribute must be a scalar value (string, integer, float, boolean); "%s" given.', $attributeName, \gettype($attributeValue)));
+        }
+
+        $this->dto->setFormTypeOption('attr.'.$attributeName, $attributeValue);
+
+        return $this;
+    }
+
+    public function setHtmlAttributes(array $attributes): self
+    {
+        foreach ($attributes as $attributeName => $attributeValue) {
+            $this->setHtmlAttribute($attributeName, $attributeValue);
+        }
+
+        return $this;
+    }
+
     public function setSortable(bool $isSortable): self
     {
         $this->dto->setSortable($isSortable);
@@ -136,7 +171,7 @@ trait FieldTrait
         return $this;
     }
 
-    public function setPermission(string $permission): self
+    public function setPermission(string|Expression $permission): self
     {
         $this->dto->setPermission($permission);
 
@@ -218,14 +253,27 @@ trait FieldTrait
         }
 
         foreach ($entryNamesOrAssets as $entryNameOrAsset) {
-            if (!\is_string($entryNameOrAsset) && !($entryNameOrAsset instanceof Asset)) {
-                throw new \RuntimeException(sprintf('The argument passed to %s() can only be a string or a object of type "%s".', __METHOD__, Asset::class));
-            }
-
             if (\is_string($entryNameOrAsset)) {
                 $this->dto->addWebpackEncoreAsset(new AssetDto($entryNameOrAsset));
             } else {
                 $this->dto->addWebpackEncoreAsset($entryNameOrAsset->getAsDto());
+            }
+        }
+
+        return $this;
+    }
+
+    public function addAssetMapperEntries(Asset|string ...$entryNamesOrAssets): self
+    {
+        if (!class_exists('Symfony\\Component\\AssetMapper\\AssetMapper')) {
+            throw new \RuntimeException('You are trying to add AssetMapper entries in a field but AssetMapper is not installed in your project. Try running "composer require symfony/asset-mapper"');
+        }
+
+        foreach ($entryNamesOrAssets as $entryNameOrAsset) {
+            if (\is_string($entryNameOrAsset)) {
+                $this->dto->addAssetMapperEncoreAsset(new AssetDto($entryNameOrAsset));
+            } else {
+                $this->dto->addAssetMapperEncoreAsset($entryNameOrAsset->getAsDto());
             }
         }
 
@@ -380,8 +428,8 @@ trait FieldTrait
     }
 
     /**
-     * @param $cols An integer with the number of columns that this field takes (e.g. 6),
-     *              or a string with responsive col CSS classes (e.g. 'col-6 col-sm-4 col-lg-3')
+     * @param int|string $cols An integer with the number of columns that this field takes (e.g. 6),
+     *                         or a string with responsive col CSS classes (e.g. 'col-6 col-sm-4 col-lg-3')
      */
     public function setColumns(int|string $cols): self
     {

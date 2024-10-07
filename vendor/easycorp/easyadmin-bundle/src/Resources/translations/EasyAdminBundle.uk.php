@@ -3,7 +3,7 @@
 return [
     'page_title' => [
         'dashboard' => 'Дешборд',
-        'detail' => '%entity_as_string%',
+        'detail' => '%entity_label_singular% <small>(#%entity_short_id%)</small>',
         'edit' => '%entity_label_singular%',
         'index' => '%entity_label_plural%',
         'new' => 'Створити новий %entity_label_singular%',
@@ -128,7 +128,7 @@ return [
 
     'autocomplete' => [
         'no-results-found' => 'Нічого не знайдено',
-        // 'no-more-results' => 'No more results',
+        'no-more-results' => 'Більше немає результатів',
         'loading-more-results' => 'Завантаження інших результатів…',
     ],
 ];

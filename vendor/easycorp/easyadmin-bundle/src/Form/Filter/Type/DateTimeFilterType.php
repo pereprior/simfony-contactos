@@ -19,9 +19,9 @@ class DateTimeFilterType extends AbstractType
 {
     private string $valueType;
 
-    public function __construct(string $valueType = null)
+    public function __construct(?string $valueType = null)
     {
-        $this->valueType = $valueType ?: DateTimeType::class;
+        $this->valueType = $valueType ?? DateTimeType::class;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -33,6 +33,10 @@ class DateTimeFilterType extends AbstractType
         $builder->addModelTransformer(new CallbackTransformer(
             static fn ($data) => $data,
             static function ($data) use ($options) {
+                // Symfony Form will cut off invalid values, so make sure no warnings will be thrown out
+                $data['value'] ??= null;
+                $data['value2'] ??= null;
+
                 if (ComparisonType::BETWEEN === $data['comparison']) {
                     if (null === $data['value'] || '' === $data['value'] || null === $data['value2'] || '' === $data['value2']) {
                         throw new TransformationFailedException('Two values must be provided when "BETWEEN" comparison is selected.');

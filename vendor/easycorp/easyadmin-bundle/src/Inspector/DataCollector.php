@@ -24,12 +24,12 @@ class DataCollector extends BaseDataCollector
         $this->adminContextProvider = $adminContextProvider;
     }
 
-    public function reset()
+    public function reset(): void
     {
         $this->data = [];
     }
 
-    public function collect(Request $request, Response $response, $exception = null)
+    public function collect(Request $request, Response $response, $exception = null): void
     {
         if (null === $context = $this->adminContextProvider->getContext()) {
             return;
@@ -45,7 +45,7 @@ class DataCollector extends BaseDataCollector
 
     public function isEasyAdminRequest(): bool
     {
-        return !empty($this->data);
+        return 0 !== \count($this->data);
     }
 
     public function getData(): array

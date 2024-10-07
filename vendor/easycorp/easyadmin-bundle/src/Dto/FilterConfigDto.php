@@ -20,7 +20,7 @@ final class FilterConfigDto
     /**
      * @param FilterInterface|string $filterNameOrConfig
      */
-    public function addFilter(/* FilterInterface|string */ $filterNameOrConfig): void
+    public function addFilter($filterNameOrConfig): void
     {
         if (!\is_string($filterNameOrConfig) && !$filterNameOrConfig instanceof FilterInterface) {
             trigger_deprecation(

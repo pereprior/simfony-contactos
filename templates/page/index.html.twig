@@ -1,7 +1,20 @@
 {% extends 'page/base.html.twig' %}
 {% block title %}Users{% endblock %}
 {% block body %}
+    <div>
+        {% if app.user %}
+            {{ app.user.email }}
+            <a href="{{ path('app_logout') }}">Logout</a>
+        {% else %}
+            <a href="{{ path('login') }}">Login</a>
+            <a href="{{ path('app_register') }}">Register</a>
+        {% endif %}
+    </div>
+
     <h1>Usuarios</h1>
     <h2>Bienvenido a la web de usuarios.</h2>
+    {% if is_granted('ROLE_ADMIN') %}
+        <p>ERES ADMIN, ENHORABUENA</p>
+    {% endif %}
     <p>Página de inicio</p>
 {% endblock %}

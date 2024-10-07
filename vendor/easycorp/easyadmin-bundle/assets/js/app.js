@@ -1,15 +1,16 @@
 // any CSS you require will output into a single css file (app.css in this case)
-require('../css/app.scss');
+require('../css/app.css');
 
 import bootstrap from 'bootstrap/dist/js/bootstrap.bundle';
 import Mark from 'mark.js/src/vanilla';
 import Autocomplete from './autocomplete';
+import {toggleVisibilityClasses} from "./helpers";
 
 // Provide Bootstrap variable globally to allow custom backend pages to use it
 window.bootstrap = bootstrap;
 
 document.addEventListener('DOMContentLoaded', () => {
-    new App();
+    window.EasyAdminApp = new App();
 });
 
 class App {
@@ -20,6 +21,7 @@ class App {
         this.#sidebarWidthLocalStorageKey = 'ea/sidebar/width';
         this.#contentWidthLocalStorageKey = 'ea/content/width';
 
+        this.#removeHashFormUrl();
         this.#createMainMenu();
         this.#createLayoutResizeControls();
         this.#createNavigationToggler();
@@ -29,8 +31,29 @@ class App {
         this.#createBatchActions();
         this.#createModalWindowsForDeleteActions();
         this.#createPopovers();
+        this.#createTooltips();
 
         document.addEventListener('ea.collection.item-added', () => this.#createAutoCompleteFields());
+    }
+
+    // When using tabs in forms, the selected tab is persisted (in the URL hash) so you
+    // can see the same tab when reloading the page (e.g. '#tab-contact-information').
+    // This method removes the hash from URL in the index page to not show form-related
+    // information in the index page
+    #removeHashFormUrl() {
+        if (!window.location.href.includes('#')) {
+            return;
+        }
+
+        // remove the hash only in the index page
+        if (!document.querySelector('body').classList.contains('ea-index')) {
+            return;
+        }
+
+        // don't set the hash to '' because that also removes the query parameters
+        const urlParts = window.location.href.split('#');
+        const urlWithoutHash = urlParts[0];
+        window.history.replaceState({}, '', urlWithoutHash);
     }
 
     #createMainMenu() {
@@ -38,6 +61,9 @@ class App {
         const menuItemsWithSubmenus = document.querySelectorAll('#main-menu .menu-item.has-submenu');
         menuItemsWithSubmenus.forEach((menuItem) => {
             const menuItemSubmenu = menuItem.querySelector('.submenu');
+            if (null === menuItemSubmenu) {
+                return;
+            }
 
             // needed because the menu accordion is based on the max-height property.
             // visible elements must be initialized with a explicit max-height; otherwise
@@ -140,9 +166,26 @@ class App {
             return;
         }
 
-        const elementsToHighlight = document.querySelectorAll('table tbody td:not(.actions)');
+        // splits a string into tokens, taking into account quoted strings
+        // Example: 'foo "bar baz" qux' => ['foo', 'bar baz', 'qux']
+        const tokenizeString = (string) => {
+            const regex = /"([^"\\]*(\\.[^"\\]*)*)"|\S+/g;
+            const tokens = [];
+            let match;
+
+            while (null !== (match = regex.exec(string))) {
+                tokens.push(match[0].replaceAll('"', '').trim());
+            }
+
+            return tokens;
+        };
+
+        const searchQueryTerms = tokenizeString(searchElement.value);
+        const searchQueryTermsHighlightRegexp = new RegExp(searchQueryTerms.join('|'), 'i');
+
+        const elementsToHighlight = document.querySelectorAll('table tbody td.searchable');
         const highlighter = new Mark(elementsToHighlight);
-        highlighter.mark(searchQuery);
+        highlighter.markRegExp(searchQueryTermsHighlightRegexp);
     }
 
     #createFilters() {
@@ -260,16 +303,16 @@ class App {
                 const batchActions = content.querySelector('.batch-actions');
 
                 if (null !== contentTitle) {
-                    contentTitle.style.visibility = rowsAreSelected ? 'hidden' : 'visible';
+                    toggleVisibilityClasses(contentTitle, rowsAreSelected);
                 }
                 if (null !== filters) {
-                    filters.style.display = rowsAreSelected ? 'none' : 'block';
+                    toggleVisibilityClasses(filters, rowsAreSelected);
                 }
                 if (null !== globalActions) {
-                    globalActions.style.display = rowsAreSelected ? 'none' : 'block';
+                    toggleVisibilityClasses(globalActions, rowsAreSelected);
                 }
                 if (null !== batchActions) {
-                    batchActions.style.display = rowsAreSelected ? 'block' : 'none';
+                    toggleVisibilityClasses(batchActions, !rowsAreSelected);
                 }
             });
         });
@@ -281,7 +324,8 @@ class App {
             dataActionBatch.addEventListener('click', (event) => {
                 event.preventDefault();
 
-                const actionElement = event.target.tagName.toUpperCase() === 'A' ? event.target : event.target.parentNode;
+                const actionElement = event.currentTarget;
+                // There is still a possibility that actionName will remain undefined. The title attribute is not always present on elements with the [data-action-batch] attribute.
                 const actionName = actionElement.textContent.trim() || actionElement.getAttribute('title');
                 const selectedItems = document.querySelectorAll('input[type="checkbox"].form-batch-checkbox:checked');
                 modalTitle.textContent = titleContentWithPlaceholders
@@ -348,6 +392,12 @@ class App {
         });
     }
 
+    #createTooltips() {
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((tooltipElement) => {
+            new bootstrap.Tooltip(tooltipElement);
+        });
+    }
+
     #createFilterToggles() {
         document.querySelectorAll('.filter-checkbox').forEach((filterCheckbox) => {
             filterCheckbox.addEventListener('change', () => {
@@ -389,7 +439,7 @@ class App {
                     return;
                 }
 
-                secondValue.style.display = comparisonWidget.value === 'between' ? '' : 'none';
+                toggleVisibilityClasses(secondValue, comparisonWidget.value !== 'between');
             });
         });
     }

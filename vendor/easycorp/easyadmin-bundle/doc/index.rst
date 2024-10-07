@@ -27,7 +27,7 @@ Table of Contents
     actions
     security
     events
-    translation
+    tests
     upgrade
 
 Technical Requirements

@@ -19,6 +19,8 @@ final class MoneyConfigurator implements FieldConfiguratorInterface
     private IntlFormatter $intlFormatter;
     private PropertyAccessorInterface $propertyAccessor;
 
+    public const DEFAULT_DIVISOR = 100;
+
     public function __construct(IntlFormatter $intlFormatter, PropertyAccessorInterface $propertyAccessor)
     {
         $this->intlFormatter = $intlFormatter;
@@ -41,15 +43,15 @@ final class MoneyConfigurator implements FieldConfiguratorInterface
         $numDecimals = $field->getCustomOption(MoneyField::OPTION_NUM_DECIMALS);
         $field->setFormTypeOption('scale', $numDecimals);
 
-        $storedAsCents = $field->getCustomOption(MoneyField::OPTION_STORED_AS_CENTS);
-        $field->setFormTypeOption('divisor', $storedAsCents ? 100 : 1);
+        $isStoredAsCents = true === $field->getCustomOption(MoneyField::OPTION_STORED_AS_CENTS);
+        $field->setFormTypeOptionIfNotSet('divisor', $isStoredAsCents ? self::DEFAULT_DIVISOR : 1);
 
         if (null === $field->getValue()) {
             return;
         }
 
-        $amount = $storedAsCents ? $field->getValue() / 100 : $field->getValue();
-
+        $divisor = $field->getFormTypeOption('divisor');
+        $amount = $field->getValue() / $divisor;
         $formattedValue = $this->intlFormatter->formatCurrency($amount, $currencyCode, ['fraction_digit' => $numDecimals]);
         $field->setFormattedValue($formattedValue);
     }

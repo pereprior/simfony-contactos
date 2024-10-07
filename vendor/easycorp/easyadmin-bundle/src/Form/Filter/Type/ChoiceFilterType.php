@@ -17,7 +17,13 @@ class ChoiceFilterType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $multiple = $builder->get('value')->getOption('multiple');
+        $multiple = (bool) $builder->get('value')->getOption('multiple');
+
+        // if the filter shows the values as checkboxes or radio buttons, remove the
+        // attribute that turns the <select> into an autocomplete widget
+        if (true === ($options['value_type_options']['expanded'] ?? false)) {
+            unset($options['value_type_options']['attr']['data-ea-widget']);
+        }
 
         $builder->addModelTransformer(new CallbackTransformer(
             static fn ($data) => $data,

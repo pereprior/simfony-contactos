@@ -3,6 +3,7 @@
 namespace EasyCorp\Bundle\EasyAdminBundle\Config\Menu;
 
 use EasyCorp\Bundle\EasyAdminBundle\Dto\MenuItemDto;
+use Symfony\Component\ExpressionLanguage\Expression;
 
 /**
  * @author Javier Eguiluz <javier.eguiluz@gmail.com>
@@ -25,7 +26,7 @@ trait MenuItemTrait
         return $this;
     }
 
-    public function setPermission(string $permission): self
+    public function setPermission(string|Expression $permission): self
     {
         $this->dto->setPermission($permission);
 
@@ -54,14 +55,14 @@ trait MenuItemTrait
     }
 
     /**
-     * @param $content  This is rendered as the value of the badge; it can be anything that can be casted to
-     *                  a string (numbers, stringable objects, etc.)
-     * @param $style    Pass one of these values for predefined styles: 'primary', 'secondary', 'success',
-     *                  'danger', 'warning', 'info', 'light', 'dark'
-     *                  Otherwise, the passed value is applied "as is" to the `style` attribute of the HTML
-     *                  element of the badge
+     * @param mixed  $content This is rendered as the value of the badge; it can be anything that can be cast to
+     *                        a string (numbers, stringable objects, etc.)
+     * @param string $style   Pass one of these values for predefined styles: 'primary', 'secondary', 'success',
+     *                        'danger', 'warning', 'info', 'light', 'dark'
+     *                        Otherwise, the passed value is applied "as is" to the `style` attribute of the HTML
+     *                        element of the badge
      */
-    public function setBadge(/* \Stringable|string|int|float|bool|null */ $content, string $style = 'secondary'): self
+    public function setBadge(/* \Stringable|string|int|float|bool|null */ $content, string $style = 'secondary', array $htmlAttributes = []): self
     {
         if (!\is_string($content)
             && !$content instanceof \Stringable
@@ -80,7 +81,7 @@ trait MenuItemTrait
             );
         }
 
-        $this->dto->setBadge($content, $style);
+        $this->dto->setBadge($content, $style, $htmlAttributes);
 
         return $this;
     }

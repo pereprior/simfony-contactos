@@ -9,6 +9,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Option\TextDirection;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Controller\CrudControllerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Controller\DashboardControllerInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Contracts\Factory\MenuFactoryInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\ActionConfigDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\AssetsDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\CrudDto;
@@ -33,11 +34,11 @@ final class AdminContextFactory
 {
     private string $cacheDir;
     private ?TokenStorageInterface $tokenStorage;
-    private MenuFactory $menuFactory;
+    private MenuFactoryInterface $menuFactory;
     private CrudControllerRegistry $crudControllers;
     private EntityFactory $entityFactory;
 
-    public function __construct(string $cacheDir, ?TokenStorageInterface $tokenStorage, MenuFactory $menuFactory, CrudControllerRegistry $crudControllers, EntityFactory $entityFactory)
+    public function __construct(string $cacheDir, ?TokenStorageInterface $tokenStorage, MenuFactoryInterface $menuFactory, CrudControllerRegistry $crudControllers, EntityFactory $entityFactory)
     {
         $this->cacheDir = $cacheDir;
         $this->tokenStorage = $tokenStorage;
@@ -71,13 +72,14 @@ final class AdminContextFactory
     {
         $dashboardRoutesCachePath = $this->cacheDir.'/'.CacheWarmer::DASHBOARD_ROUTES_CACHE;
         $dashboardControllerRoutes = !file_exists($dashboardRoutesCachePath) ? [] : require $dashboardRoutesCachePath;
-        $dashboardController = \get_class($dashboardControllerInstance).'::index';
+        $dashboardController = $dashboardControllerInstance::class.'::index';
         $dashboardRouteName = null;
 
         foreach ($dashboardControllerRoutes as $routeName => $controller) {
             if ($controller === $dashboardController) {
-                // needed for i18n routes, whose name follows the pattern "route_name.locale"
-                $dashboardRouteName = explode('.', $routeName, 2)[0];
+                // if present, remove the suffix of i18n route names (it's the content after the last dot
+                // in the route name; e.g. 'dashboard.en' -> remove '.en', 'admin.index.en_US' -> remove '.en_US')
+                $dashboardRouteName = preg_replace('~\.[a-z]{2}(_[A-Z]{2})?$~', '', $routeName);
 
                 break;
             }
@@ -113,9 +115,9 @@ final class AdminContextFactory
         $defaultCrud = $dashboardController->configureCrud();
         $crudDto = $crudController->configureCrud($defaultCrud)->getAsDto();
 
-        $entityFqcn = $crudControllers->findEntityFqcnByCrudFqcn(\get_class($crudController));
+        $entityFqcn = $crudControllers->findEntityFqcnByCrudFqcn($crudController::class);
 
-        $crudDto->setControllerFqcn(\get_class($crudController));
+        $crudDto->setControllerFqcn($crudController::class);
         $crudDto->setActionsConfig($actionConfigDto);
         $crudDto->setFiltersConfig($filters);
         $crudDto->setCurrentAction($crudAction);
@@ -167,7 +169,7 @@ final class AdminContextFactory
 
         $configuredTextDirection = $dashboardDto->getTextDirection();
         $localePrefix = strtolower(substr($locale, 0, 2));
-        $defaultTextDirection = \in_array($localePrefix, ['ar', 'fa', 'he']) ? TextDirection::RTL : TextDirection::LTR;
+        $defaultTextDirection = \in_array($localePrefix, ['ar', 'fa', 'he'], true) ? TextDirection::RTL : TextDirection::LTR;
         $textDirection = $configuredTextDirection ?? $defaultTextDirection;
 
         $translationDomain = $dashboardDto->getTranslationDomain();
@@ -177,7 +179,7 @@ final class AdminContextFactory
             $translationParameters['%entity_name%'] = $entityName = basename(str_replace('\\', '/', $crudDto->getEntityFqcn()));
             $translationParameters['%entity_as_string%'] = null === $entityDto ? '' : $entityDto->toString();
             $translationParameters['%entity_id%'] = $entityId = $request->query->get(EA::ENTITY_ID);
-            $translationParameters['%entity_short_id%'] = null === $entityId ? null : u((string) $entityId)->truncate(7)->toString();
+            $translationParameters['%entity_short_id%'] = null === $entityId ? null : u($entityId)->truncate(7)->toString();
 
             $entityInstance = null === $entityDto ? null : $entityDto->getInstance();
             $pageName = $crudDto->getCurrentPage();
@@ -214,15 +216,16 @@ final class AdminContextFactory
         $defaultSort = $crudDto->getDefaultSort();
         $customSort = $queryParams[EA::SORT] ?? [];
         $appliedFilters = $queryParams[EA::FILTERS] ?? [];
+        $searchMode = $crudDto->getSearchMode();
 
-        return new SearchDto($request, $searchableProperties, $query, $defaultSort, $customSort, $appliedFilters);
+        return new SearchDto($request, $searchableProperties, $query, $defaultSort, $customSort, $appliedFilters, $searchMode);
     }
 
     // Copied from https://github.com/symfony/twig-bridge/blob/master/AppVariable.php
     // (c) Fabien Potencier <fabien@symfony.com> - MIT License
     private function getUser(?TokenStorageInterface $tokenStorage): ?UserInterface
     {
-        if (null === $tokenStorage || !$token = $tokenStorage->getToken()) {
+        if (null === $token = $tokenStorage?->getToken()) {
             return null;
         }
 

@@ -29,6 +29,7 @@ use Symfony\Bundle\MakerBundle\InputConfiguration;
 use Symfony\Bundle\MakerBundle\Str;
 use Symfony\Bundle\MakerBundle\Util\ClassDetails;
 use Symfony\Bundle\MakerBundle\Util\ClassSourceManipulator;
+use Symfony\Bundle\MakerBundle\Util\CliOutputHelper;
 use Symfony\Bundle\MakerBundle\Util\PhpCompatUtil;
 use Symfony\Bundle\MakerBundle\Validator;
 use Symfony\Component\Console\Command\Command;
@@ -133,9 +134,9 @@ final class MakeEntity extends AbstractMaker implements InputAwareMakerInterface
         $input->setArgument('name', $entityClassName);
 
         if (
-            !$input->getOption('api-resource') &&
-            (class_exists(ApiResource::class) || class_exists(LegacyApiResource::class)) &&
-            !class_exists($this->generator->createClassNameDetails($entityClassName, 'Entity\\')->getFullName())
+            !$input->getOption('api-resource')
+            && (class_exists(ApiResource::class) || class_exists(LegacyApiResource::class))
+            && !class_exists($this->generator->createClassNameDetails($entityClassName, 'Entity\\')->getFullName())
         ) {
             $description = $command->getDefinition()->getOption('api-resource')->getDescription();
             $question = new ConfirmationQuestion($description, false);
@@ -145,9 +146,9 @@ final class MakeEntity extends AbstractMaker implements InputAwareMakerInterface
         }
 
         if (
-            !$input->getOption('broadcast') &&
-            class_exists(Broadcast::class) &&
-            !class_exists($this->generator->createClassNameDetails($entityClassName, 'Entity\\')->getFullName())
+            !$input->getOption('broadcast')
+            && class_exists(Broadcast::class)
+            && !class_exists($this->generator->createClassNameDetails($entityClassName, 'Entity\\')->getFullName())
         ) {
             $description = $command->getDefinition()->getOption('broadcast')->getDescription();
             $question = new ConfirmationQuestion($description, false);
@@ -310,7 +311,7 @@ final class MakeEntity extends AbstractMaker implements InputAwareMakerInterface
 
         $this->writeSuccessMessage($io);
         $io->text([
-            'Next: When you\'re ready, create a migration with <info>php bin/console make:migration</info>',
+            sprintf('Next: When you\'re ready, create a migration with <info>%s make:migration</info>', CliOutputHelper::getCommandPrefix()),
             '',
         ]);
     }
@@ -485,9 +486,9 @@ final class MakeEntity extends AbstractMaker implements InputAwareMakerInterface
                 $line = sprintf('  * <comment>%s</comment>', $mainType);
 
                 if (\is_string($subTypes) && $subTypes) {
-                    $line .= sprintf(' (%s)', $subTypes);
+                    $line .= sprintf(' or %s', $subTypes);
                 } elseif (\is_array($subTypes) && !empty($subTypes)) {
-                    $line .= sprintf(' (or %s)', implode(', ', array_map(
+                    $line .= sprintf(' or %s', implode(' or ', array_map(
                         static fn ($subType) => sprintf('<comment>%s</comment>', $subType), $subTypes))
                     );
 
@@ -502,10 +503,10 @@ final class MakeEntity extends AbstractMaker implements InputAwareMakerInterface
             $io->writeln('');
         };
 
-        $io->writeln('<info>Main types</info>');
+        $io->writeln('<info>Main Types</info>');
         $printSection($typesTable['main']);
 
-        $io->writeln('<info>Relationships / Associations</info>');
+        $io->writeln('<info>Relationships/Associations</info>');
         $printSection($typesTable['relation']);
 
         $io->writeln('<info>Array/Object Types</info>');
@@ -765,17 +766,17 @@ final class MakeEntity extends AbstractMaker implements InputAwareMakerInterface
         $rows = [];
         $rows[] = [
             EntityRelation::MANY_TO_ONE,
-            sprintf("Each <comment>%s</comment> relates to (has) <info>one</info> <comment>%s</comment>.\nEach <comment>%s</comment> can relate to (can have) <info>many</info> <comment>%s</comment> objects", $originalEntityShort, $targetEntityShort, $targetEntityShort, $originalEntityShort),
+            sprintf("Each <comment>%s</comment> relates to (has) <info>one</info> <comment>%s</comment>.\nEach <comment>%s</comment> can relate to (can have) <info>many</info> <comment>%s</comment> objects.", $originalEntityShort, $targetEntityShort, $targetEntityShort, $originalEntityShort),
         ];
         $rows[] = ['', ''];
         $rows[] = [
             EntityRelation::ONE_TO_MANY,
-            sprintf("Each <comment>%s</comment> can relate to (can have) <info>many</info> <comment>%s</comment> objects.\nEach <comment>%s</comment> relates to (has) <info>one</info> <comment>%s</comment>", $originalEntityShort, $targetEntityShort, $targetEntityShort, $originalEntityShort),
+            sprintf("Each <comment>%s</comment> can relate to (can have) <info>many</info> <comment>%s</comment> objects.\nEach <comment>%s</comment> relates to (has) <info>one</info> <comment>%s</comment>.", $originalEntityShort, $targetEntityShort, $targetEntityShort, $originalEntityShort),
         ];
         $rows[] = ['', ''];
         $rows[] = [
             EntityRelation::MANY_TO_MANY,
-            sprintf("Each <comment>%s</comment> can relate to (can have) <info>many</info> <comment>%s</comment> objects.\nEach <comment>%s</comment> can also relate to (can also have) <info>many</info> <comment>%s</comment> objects", $originalEntityShort, $targetEntityShort, $targetEntityShort, $originalEntityShort),
+            sprintf("Each <comment>%s</comment> can relate to (can have) <info>many</info> <comment>%s</comment> objects.\nEach <comment>%s</comment> can also relate to (can also have) <info>many</info> <comment>%s</comment> objects.", $originalEntityShort, $targetEntityShort, $targetEntityShort, $originalEntityShort),
         ];
         $rows[] = ['', ''];
         $rows[] = [

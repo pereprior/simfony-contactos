@@ -41,7 +41,6 @@ application:
 
     # config/packages/doctrine_migrations.yaml
 
-
     doctrine_migrations:
         # List of namespace/path pairs to search for migrations, at least one required
         migrations_paths:
@@ -82,6 +81,9 @@ application:
 
         # Whether or not to wrap migrations in a single transaction.
         transactional: true
+
+        # Whether or not to enable the profiler collector to calculate and visualize migration status. This adds some queries overhead.
+        # enable_profiler: false
 
         services:
             # Custom migration sorting service id
@@ -181,7 +183,7 @@ migration to execute:
 
 .. code-block:: terminal
 
-    $ php bin/console doctrine:migrations:status --show-versions
+    $ php bin/console doctrine:migrations:status
 
 Now you can add some migration code to the ``up()`` and ``down()`` methods and
 finally migrate when you're ready:
@@ -249,10 +251,9 @@ Here is an example on how to inject the service container into your migrations:
 
         # config/services.yaml
         services:
-            Doctrine\Migrations\Version\DbalMigrationFactory: ~
             App\Migrations\Factory\MigrationFactoryDecorator:
-                decorates: Doctrine\Migrations\Version\DbalMigrationFactory
-                arguments: ['@App\Migrations\Factory\MigrationFactoryDecorator.inner', '@service_container']
+                decorates: 'doctrine.migrations.migrations_factory'
+                arguments: ['@.inner', '@service_container']
 
 
 .. code-block:: php

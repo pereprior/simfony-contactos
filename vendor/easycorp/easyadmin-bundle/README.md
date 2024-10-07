@@ -1,6 +1,3 @@
-> **Warning**
-> Due to the overwhelming amount of pending issues and pull requests, users can no longer interact with this repository (add comments, open issues, or create pull requests) during the entire month of July 2022. Users who committed to this repository in the past can still interact with it. We're sorry but we had to do this to take care of the mental health our maintainers.
-
 EasyAdmin
 =========
 
@@ -29,7 +26,7 @@ Versions
 
 | Repository Branch | EasyAdmin Version | Symfony Compatibility  | PHP Compatibility | Status               | Docs
 | ----------------- | ----------------- | ---------------------- | ----------------- | -------------------- | ---
-| `4.x`             | `4.x`             | `5.4`, and `6.x`       | `8.0.2` or higher | New features and bug fixes | [Read Docs](https://symfony.com/bundles/EasyAdminBundle/master/index.html)
+| `4.x`             | `4.x`             | `5.4`, `6.x` and `7.x` | `8.0.2` or higher | New features and bug fixes | [Read Docs](https://symfony.com/bundles/EasyAdminBundle/4.x/index.html)
 | `3.x`             | `3.x`             | `4.4`, and `5.x`       | `7.2.5` or higher | Bug fixes only; no new features | [Read Docs](https://symfony.com/bundles/EasyAdminBundle/3.x/index.html)
 | `2.x`             | `2.x`             | `4.x`, and `5.x`       | `7.1.3` or higher | No longer maintained | [Read Docs](https://symfony.com/bundles/EasyAdminBundle/2.x/index.html)
 | `1.x`             | `1.x`             | `2.x`, `3.x` and `4.x` | `5.3.0` or higher | No longer maintained | -
@@ -40,6 +37,25 @@ Demo Application
 [easyadmin-demo](https://github.com/EasyCorp/easyadmin-demo) is a complete
 Symfony application that showcases EasyAdmin features. It's based on the
 [Symfony Demo](https://github.com/symfony/demo) project.
+
+Dev Environment
+---------------
+
+EasyAdmin ships a DDEV environment, which allows you to run EasyAdmin in a Symfony Framework project
+providing example entities and CRUD Controllers. 
+
+**Requirements:**
+
+  * [Docker](https://www.docker.com/get-started/)
+  * [DDEV](https://ddev.com/get-started/)
+
+**Using the environment:**
+
+  * Checkout the EasyAdmin git repository and switch in the project directory
+  * Perform `ddev setup` which starts and provisions the web container
+  * EasyAdmin is available under the URL: https://easy-admin-bundle.ddev.site
+  * To (re-)build frontend assets perform `ddev build-assets`
+  * To run unit tests perform `ddev run-tests`
 
 License
 -------

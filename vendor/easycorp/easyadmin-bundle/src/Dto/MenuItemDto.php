@@ -2,6 +2,7 @@
 
 namespace EasyCorp\Bundle\EasyAdminBundle\Dto;
 
+use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Contracts\Translation\TranslatableInterface;
 
 /**
@@ -19,12 +20,12 @@ final class MenuItemDto
     public const TYPE_ROUTE = 'route';
 
     private ?string $type = null;
-    private ?int $index = null;
-    private ?int $subIndex = null;
+    private bool $selected = false;
+    private bool $expanded = false;
     private TranslatableInterface|string|null $label = null;
     private ?string $icon = null;
     private string $cssClass = '';
-    private ?string $permission = null;
+    private string|Expression|null $permission = null;
     private ?string $routeName = null;
     private ?array $routeParameters = null;
     private ?string $linkUrl = null;
@@ -34,6 +35,7 @@ final class MenuItemDto
     private ?MenuItemBadgeDto $badge = null;
     /** @var MenuItemDto[] */
     private array $subItems = [];
+    private array $htmlAttributes = [];
 
     public function getType(): string
     {
@@ -45,24 +47,62 @@ final class MenuItemDto
         $this->type = $type;
     }
 
+    /** @deprecated This was used in the past to get the selected menu item
+     *              Now the active menu item is detected automatically via the Request data
+     */
     public function getIndex(): int
     {
-        return $this->index;
+        return -1;
     }
 
+    /** @deprecated This was used in the past to set the selected menu item
+     *              Now the active menu item is detected automatically via the Request data
+     */
     public function setIndex(int $index): void
     {
-        $this->index = $index;
+        // do nothing...
     }
 
+    /** @deprecated This was used in the past to get the selected menu subitem
+     *              Now the active menu item is detected automatically via the Request data
+     */
     public function getSubIndex(): int
     {
-        return $this->subIndex;
+        return -1;
     }
 
+    /** @deprecated This was used in the past to set the selected menu subitem
+     *              Now the active menu item is detected automatically via the Request data
+     */
     public function setSubIndex(int $subIndex): void
     {
-        $this->subIndex = $subIndex;
+        // do nothing
+    }
+
+    /**
+     * @return bool Returns true when this menu item is the selected one
+     */
+    public function isSelected(): bool
+    {
+        return $this->selected;
+    }
+
+    public function setSelected(bool $isSelected): void
+    {
+        $this->selected = $isSelected;
+    }
+
+    /**
+     * @return bool Returns true when any of its subitems is selected
+     */
+    public function isExpanded(): bool
+    {
+        return $this->expanded;
+    }
+
+    public function setExpanded(bool $isExpanded): void
+    {
+        $this->expanded = $isExpanded;
     }
 
     public function getLabel(): TranslatableInterface|string
@@ -120,12 +160,12 @@ final class MenuItemDto
         $this->routeParameters = $routeParameters;
     }
 
-    public function getPermission(): ?string
+    public function getPermission(): string|Expression|null
     {
         return $this->permission;
     }
 
-    public function setPermission(?string $permission): void
+    public function setPermission(string|Expression|null $permission): void
     {
         $this->permission = $permission;
     }
@@ -175,9 +215,9 @@ final class MenuItemDto
         return $this->badge;
     }
 
-    public function setBadge(mixed $content, string $style): void
+    public function setBadge(mixed $content, string $style, array $htmlAttributes = []): void
     {
-        $this->badge = new MenuItemBadgeDto($content, trim($style));
+        $this->badge = new MenuItemBadgeDto($content, trim($style), $htmlAttributes);
     }
 
     /**
@@ -204,5 +244,15 @@ final class MenuItemDto
     public function isMenuSection(): bool
     {
         return self::TYPE_SECTION === $this->type;
+    }
+
+    public function getHtmlAttributes(): array
+    {
+        return $this->htmlAttributes;
+    }
+
+    public function setHtmlAttribute(string $attribute, mixed $value): void
+    {
+        $this->htmlAttributes[$attribute] = $value;
     }
 }

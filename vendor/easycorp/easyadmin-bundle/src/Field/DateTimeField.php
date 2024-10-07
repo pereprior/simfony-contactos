@@ -21,6 +21,7 @@ final class DateTimeField implements FieldInterface
 
     public const VALID_DATE_FORMATS = [self::FORMAT_NONE, self::FORMAT_SHORT, self::FORMAT_MEDIUM, self::FORMAT_LONG, self::FORMAT_FULL];
 
+    /** @deprecated since EasyAdmin 4.11.1. We no longer transform the format names (e.g. 'short') into its pattern (e.g. 'M/d/yy'). We now pass the original format/pattern as is to the IntlFormatter to properly format it according to the current locale */
     public const INTL_DATE_PATTERNS = [
         self::FORMAT_FULL => 'EEEE, MMMM d, y',
         self::FORMAT_LONG => 'MMMM d, y',
@@ -29,6 +30,7 @@ final class DateTimeField implements FieldInterface
         self::FORMAT_NONE => '',
     ];
 
+    /** @deprecated since EasyAdmin 4.11.1. We no longer transform the format names (e.g. 'short') into its pattern (e.g. 'h:mm a'). We now pass the original format/pattern as is to the IntlFormatter to properly format it according to the current locale */
     public const INTL_TIME_PATTERNS = [
         self::FORMAT_FULL => 'h:mm:ss a zzzz',
         self::FORMAT_LONG => 'h:mm:ss a z',
@@ -89,7 +91,7 @@ final class DateTimeField implements FieldInterface
             throw new \InvalidArgumentException(sprintf('The first argument of the "%s()" method cannot be an empty string. Use either a date format (%s) or a datetime Intl pattern.', __METHOD__, implode(', ', self::VALID_DATE_FORMATS)));
         }
 
-        $datePatternIsEmpty = self::FORMAT_NONE === $dateFormatOrPattern || '' === trim($dateFormatOrPattern);
+        $datePatternIsEmpty = self::FORMAT_NONE === $dateFormatOrPattern;
         $timePatternIsEmpty = self::FORMAT_NONE === $timeFormat || '' === trim($timeFormat);
         if ($datePatternIsEmpty && $timePatternIsEmpty) {
             throw new \InvalidArgumentException(sprintf('The values of the arguments of "%s()" cannot be "%s" or an empty string at the same time. Change any of them (or both).', __METHOD__, self::FORMAT_NONE));

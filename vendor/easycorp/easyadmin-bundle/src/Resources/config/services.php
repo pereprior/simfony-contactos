@@ -10,6 +10,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Command\MakeAdminDashboardCommand;
 use EasyCorp\Bundle\EasyAdminBundle\Command\MakeCrudControllerCommand;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Field\FieldConfiguratorInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Filter\FilterConfiguratorInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Contracts\Menu\MenuItemMatcherInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Contracts\Orm\EntityPaginatorInterface;
 use EasyCorp\Bundle\EasyAdminBundle\DependencyInjection\EasyAdminExtension;
 use EasyCorp\Bundle\EasyAdminBundle\EventListener\AdminRouterSubscriber;
 use EasyCorp\Bundle\EasyAdminBundle\EventListener\CrudResponseListener;
@@ -21,6 +23,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Factory\EntityFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\FieldFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\FilterFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\FormFactory;
+use EasyCorp\Bundle\EasyAdminBundle\Factory\FormLayoutFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\MenuFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\PaginatorFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Configurator\ArrayConfigurator;
@@ -67,6 +70,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Form\Type\FiltersFormType;
 use EasyCorp\Bundle\EasyAdminBundle\Inspector\DataCollector;
 use EasyCorp\Bundle\EasyAdminBundle\Intl\IntlFormatter;
 use EasyCorp\Bundle\EasyAdminBundle\Maker\ClassMaker;
+use EasyCorp\Bundle\EasyAdminBundle\Menu\MenuItemMatcher;
 use EasyCorp\Bundle\EasyAdminBundle\Orm\EntityPaginator;
 use EasyCorp\Bundle\EasyAdminBundle\Orm\EntityRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Orm\EntityUpdater;
@@ -126,7 +130,10 @@ return static function (ContainerConfigurator $container) {
             // service whenever we generate a new URL, Maybe it's enough with the route parameter
             // initialization done after generating each URL
             ->arg(0, service('service_locator_'.AdminUrlGenerator::class))
-            ->arg(1, new Reference('security.csrf.token_manager', ContainerInterface::NULL_ON_INVALID_REFERENCE))
+            ->arg(1, service(AdminContextProvider::class))
+            ->arg(2, new Reference('security.csrf.token_manager', ContainerInterface::NULL_ON_INVALID_REFERENCE))
+            ->arg(3, new Reference('asset_mapper.importmap.renderer', ContainerInterface::NULL_ON_INVALID_REFERENCE))
+            ->arg(4, service('translator'))
             ->tag('twig.extension')
 
         ->set(EaCrudFormTypeExtension::class)
@@ -155,12 +162,10 @@ return static function (ContainerConfigurator $container) {
 
         ->set(AdminRouterSubscriber::class)
             ->arg(0, service(AdminContextFactory::class))
-            ->arg(1, service(CrudControllerRegistry::class))
-            ->arg(2, service(ControllerFactory::class))
-            ->arg(3, service('controller_resolver'))
+            ->arg(1, service(ControllerFactory::class))
+            ->arg(2, service('controller_resolver'))
+            ->arg(3, service('router'))
             ->arg(4, service('router'))
-            ->arg(5, service('router'))
-            ->arg(6, service('twig'))
             ->tag('kernel.event_subscriber')
 
         ->set(ControllerFactory::class)
@@ -184,9 +189,8 @@ return static function (ContainerConfigurator $container) {
             // initialization done after generating each URL
             ->share(false)
             ->arg(0, service(AdminContextProvider::class))
-            ->arg(1, service('router.default'))
+            ->arg(1, service('router'))
             ->arg(2, service(DashboardControllerRegistry::class))
-            ->arg(3, service(CrudControllerRegistry::class))
 
         ->set('service_locator_'.AdminUrlGenerator::class, ServiceLocator::class)
             ->args([[AdminUrlGenerator::class => service(AdminUrlGenerator::class)]])
@@ -196,10 +200,15 @@ return static function (ContainerConfigurator $container) {
             ->arg(0, '%kernel.secret%')
 
         ->set(MenuFactory::class)
-            ->arg(0, new Reference(AdminContextProvider::class))
-            ->arg(1, new Reference(AuthorizationChecker::class))
-            ->arg(2, new Reference('security.logout_url_generator'))
-            ->arg(3, new Reference(AdminUrlGenerator::class))
+            ->arg(0, service(AdminContextProvider::class))
+            ->arg(1, service(AuthorizationChecker::class))
+            ->arg(2, service('security.logout_url_generator'))
+            ->arg(3, service(AdminUrlGenerator::class))
+            ->arg(4, service(MenuItemMatcherInterface::class))
+
+        ->set(MenuItemMatcher::class)
+
+        ->alias(MenuItemMatcherInterface::class, MenuItemMatcher::class)
 
         ->set(EntityRepository::class)
             ->arg(0, service(AdminContextProvider::class))
@@ -219,21 +228,27 @@ return static function (ContainerConfigurator $container) {
             ->arg(0, service(AdminUrlGenerator::class))
             ->arg(1, service(EntityFactory::class))
 
+        ->alias(EntityPaginatorInterface::class, EntityPaginator::class)
+
         ->set(EntityUpdater::class)
             ->arg(0, service('property_accessor'))
             ->arg(1, service('validator'))
 
         ->set(PaginatorFactory::class)
             ->arg(0, service(AdminContextProvider::class))
-            ->arg(1, service(EntityPaginator::class))
+            ->arg(1, service(EntityPaginatorInterface::class))
 
         ->set(FormFactory::class)
             ->arg(0, service('form.factory'))
+            ->arg(1, service(AdminUrlGenerator::class))
+
+        ->set(FormLayoutFactory::class)
 
         ->set(FieldFactory::class)
             ->arg(0, service(AdminContextProvider::class))
             ->arg(1, service(AuthorizationChecker::class))
             ->arg(2, tagged_iterator(EasyAdminExtension::TAG_FIELD_CONFIGURATOR))
+            ->arg(3, service(FormLayoutFactory::class))
 
         ->set(FieldProvider::class)
             ->arg(0, service(AdminContextProvider::class))
@@ -286,6 +301,8 @@ return static function (ContainerConfigurator $container) {
         ->set(AssociationConfigurator::class)
             ->arg(0, new Reference(EntityFactory::class))
             ->arg(1, new Reference(AdminUrlGenerator::class))
+            ->arg(2, service('request_stack'))
+            ->arg(3, service(ControllerFactory::class))
 
         ->set(AvatarConfigurator::class)
 
@@ -304,6 +321,7 @@ return static function (ContainerConfigurator $container) {
 
         ->set(CommonPreConfigurator::class)
             ->arg(0, new Reference('property_accessor'))
+            ->arg(1, service(EntityFactory::class))
             ->tag(EasyAdminExtension::TAG_FIELD_CONFIGURATOR, ['priority' => 9999])
 
         ->set(CountryConfigurator::class)
@@ -337,6 +355,7 @@ return static function (ContainerConfigurator $container) {
             ->arg(0, service(IntlFormatter::class))
 
         ->set(PercentConfigurator::class)
+            ->arg(0, service(IntlFormatter::class))
 
         ->set(ChoiceConfigurator::class)
 

@@ -2,16 +2,18 @@
 
 namespace EasyCorp\Bundle\EasyAdminBundle\Factory;
 
-use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Option\EA;
 use EasyCorp\Bundle\EasyAdminBundle\Config\UserMenu;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use EasyCorp\Bundle\EasyAdminBundle\Contracts\Factory\MenuFactoryInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Menu\MenuItemInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Contracts\Menu\MenuItemMatcherInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\MainMenuDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\MenuItemDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\UserMenuDto;
 use EasyCorp\Bundle\EasyAdminBundle\Provider\AdminContextProvider;
-use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Security\Permission;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Http\Logout\LogoutUrlGenerator;
@@ -21,27 +23,29 @@ use Symfony\Contracts\Translation\TranslatableInterface;
 /**
  * @author Javier Eguiluz <javier.eguiluz@gmail.com>
  */
-final class MenuFactory
+final class MenuFactory implements MenuFactoryInterface
 {
     private AdminContextProvider $adminContextProvider;
     private AuthorizationCheckerInterface $authChecker;
     private LogoutUrlGenerator $logoutUrlGenerator;
-    private AdminUrlGenerator $adminUrlGenerator;
+    private AdminUrlGeneratorInterface $adminUrlGenerator;
+    private MenuItemMatcherInterface $menuItemMatcher;
 
-    public function __construct(AdminContextProvider $adminContextProvider, AuthorizationCheckerInterface $authChecker, LogoutUrlGenerator $logoutUrlGenerator, AdminUrlGenerator $adminUrlGenerator)
+    public function __construct(AdminContextProvider $adminContextProvider, AuthorizationCheckerInterface $authChecker, LogoutUrlGenerator $logoutUrlGenerator, AdminUrlGeneratorInterface $adminUrlGenerator, MenuItemMatcherInterface $menuItemMatcher)
     {
         $this->adminContextProvider = $adminContextProvider;
         $this->authChecker = $authChecker;
         $this->logoutUrlGenerator = $logoutUrlGenerator;
         $this->adminUrlGenerator = $adminUrlGenerator;
+        $this->menuItemMatcher = $menuItemMatcher;
     }
 
     /**
-     * @param MenuItem[] $menuItems
+     * @param MenuItemInterface[] $menuItems
      */
-    public function createMainMenu(array $menuItems, int $selectedIndex, int $selectedSubIndex): MainMenuDto
+    public function createMainMenu(array $menuItems): MainMenuDto
     {
-        return new MainMenuDto($this->buildMenuItems($menuItems), $selectedIndex, $selectedSubIndex);
+        return new MainMenuDto($this->buildMenuItems($menuItems));
     }
 
     public function createUserMenu(UserMenu $userMenu): UserMenuDto
@@ -54,17 +58,17 @@ final class MenuFactory
     }
 
     /**
-     * @param MenuItem[] $menuItems
+     * @param MenuItemInterface[] $menuItems
      *
      * @return MenuItemDto[]
      */
     private function buildMenuItems(array $menuItems): array
     {
+        /** @var AdminContext $adminContext */
         $adminContext = $this->adminContextProvider->getContext();
-        $translationDomain = $adminContext->getI18n()->getTranslationDomain();
+        $translationDomain = $adminContext->getI18n()->getTranslationDomain() ?? '';
 
         $builtItems = [];
-        /** @var MenuItemInterface $menuItem */
         foreach ($menuItems as $i => $menuItem) {
             $menuItemDto = $menuItem->getAsDto();
             if (false === $this->authChecker->isGranted(Permission::EA_VIEW_MENU_ITEM, $menuItemDto)) {
@@ -77,29 +81,29 @@ final class MenuFactory
                     continue;
                 }
 
-                $subItems[] = $this->buildMenuItem($menuSubItemDto, [], $i, $j, $translationDomain);
+                $subItems[] = $this->buildMenuItem($menuSubItemDto, [], $translationDomain);
             }
 
-            $builtItems[] = $this->buildMenuItem($menuItemDto, $subItems, $i, -1, $translationDomain);
+            $builtItems[] = $this->buildMenuItem($menuItemDto, $subItems, $translationDomain);
         }
+
+        $builtItems = $this->menuItemMatcher->markSelectedMenuItem($builtItems, $adminContext->getRequest());
 
         return $builtItems;
     }
 
-    private function buildMenuItem(MenuItemDto $menuItemDto, array $subItems, int $index, int $subIndex, string $translationDomain): MenuItemDto
+    private function buildMenuItem(MenuItemDto $menuItemDto, array $subItems, string $translationDomain): MenuItemDto
     {
         if (!$menuItemDto->getLabel() instanceof TranslatableInterface) {
             $label = $menuItemDto->getLabel();
             $menuItemDto->setLabel(
-                empty($label) ? $label : t($label, $menuItemDto->getTranslationParameters(), $translationDomain)
+                '' === $label ? $label : t($label, $menuItemDto->getTranslationParameters(), $translationDomain)
             );
         }
 
-        $url = $this->generateMenuItemUrl($menuItemDto, $index, $subIndex);
-
-        $menuItemDto->setIndex($index);
-        $menuItemDto->setSubIndex($subIndex);
+        $url = $this->generateMenuItemUrl($menuItemDto);
         $menuItemDto->setLinkUrl($url);
+
         $menuItemDto->setSubItems($subItems);
 
         // if menu item points to an absolute URL and no 'rel' attribute is defined,
@@ -112,7 +116,7 @@ final class MenuFactory
         return $menuItemDto;
     }
 
-    private function generateMenuItemUrl(MenuItemDto $menuItemDto, int $index, int $subIndex): string
+    private function generateMenuItemUrl(MenuItemDto $menuItemDto): string
     {
         $menuItemType = $menuItemDto->getType();
 
@@ -122,8 +126,6 @@ final class MenuFactory
             $this->adminUrlGenerator
                 // remove all existing query params to avoid keeping search queries, filters and pagination
                 ->unsetAll()
-                // add the index and subIndex query parameters to display the selected menu item
-                ->set(EA::MENU_INDEX, $index)->set(EA::SUBMENU_INDEX, $subIndex)
                 // set any other parameters defined by the menu item
                 ->setAll($routeParameters);
 
@@ -138,7 +140,7 @@ final class MenuFactory
                 $this->adminUrlGenerator->setController($crudControllerFqcn);
             // 2. ...otherwise, find the CRUD controller from the entityFqcn
             } else {
-                $crudControllers = $this->adminContextProvider->getContext()->getCrudControllers();
+                $crudControllers = $this->adminContextProvider->getContext()?->getCrudControllers();
                 if (null === $controllerFqcn = $crudControllers->findCrudFqcnByEntityFqcn($entityFqcn)) {
                     throw new \RuntimeException(sprintf('Unable to find the controller related to the "%s" Entity; did you forget to extend "%s"?', $entityFqcn, AbstractCrudController::class));
                 }
@@ -151,19 +153,13 @@ final class MenuFactory
         }
 
         if (MenuItemDto::TYPE_DASHBOARD === $menuItemType) {
-            return $this->adminUrlGenerator
-                ->unsetAll()
-                ->set(EA::MENU_INDEX, $index)
-                ->set(EA::SUBMENU_INDEX, $subIndex)
-                ->generateUrl();
+            return $this->adminUrlGenerator->unsetAll()->generateUrl();
         }
 
         if (MenuItemDto::TYPE_ROUTE === $menuItemType) {
             return $this->adminUrlGenerator
                 ->unsetAll()
                 ->setRoute($menuItemDto->getRouteName(), $menuItemDto->getRouteParameters())
-                ->set(EA::MENU_INDEX, $index)
-                ->set(EA::SUBMENU_INDEX, $subIndex)
                 ->generateUrl();
         }
 

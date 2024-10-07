@@ -3,7 +3,7 @@
 return [
     'page_title' => [
         'dashboard' => 'لوحة التحكم',
-        'detail' => '%entity_as_string%',
+        'detail' => '%entity_label_singular% <small>(#%entity_short_id%)</small>',
         'edit' => '%entity_label_singular% تعديل',
         'index' => '%entity_label_plural%',
         'new' => '"%entity_label_singular%" جديد',
@@ -29,7 +29,7 @@ return [
         'false' => 'لا',
         'empty' => 'فارغ',
         'null' => 'لا شيء',
-        'object' => 'Objet PHP',
+        'object' => 'كائن PHP',
         'inaccessible' => 'لا يمكن الوصول إليها',
         'inaccessible.explanation' => 'لا يوجد وصف الوصول لهذه الخاصية أو أنها ليست عامة.',
         'form.empty_value' => 'لا شيء',
@@ -100,6 +100,7 @@ return [
     'form' => [
         'are_you_sure' => 'لم يتّم حفظ التغييرات.',
         'tab.error_badge_title' => 'حقل واحد غير صالح|%count% حقول غير صالحة',
+        'slug.confirm_text' => 'إذا قمت بتغيير الرابط الثابت ، يمكنك تعطيل الروابط الموجودة في الصفحات الأخرى.',
     ],
 
     'user' => [
@@ -137,7 +138,7 @@ return [
 
     'autocomplete' => [
         'no-results-found' => 'لم يتم العثور على أي نتائج',
-        // 'no-more-results' => 'No more results',
+        'no-more-results' => 'لا يوجد نتائج أٌخرى',
         'loading-more-results' => 'جاري تحميل نتائج إضافية…',
     ],
 ];

@@ -3,7 +3,7 @@
 return [
     'page_title' => [
         'dashboard' => 'Hasiera',
-        'detail' => '%entity_as_string%',
+        'detail' => '%entity_label_singular% <small>(#%entity_short_id%)</small>',
         'edit' => '%entity_label_singular% aldatu',
         'index' => '%entity_label_plural%',
         'new' => '%entity_label_singular%-a sortu',
@@ -109,6 +109,16 @@ return [
         'anonymous' => 'Erabiltzaile anonimoa',
         'sign_out' => 'Amaitu saioa',
         'exit_impersonation' => 'Amaitu inpersonazioa',
+    ],
+
+    'settings' => [
+        'appearance' => [
+            'label' => 'Itxura',
+            'light' => 'Argia',
+            'dark' => 'Iluna',
+            'auto' => 'Automatikoa',
+        ],
+        'locale' => 'Hizkuntza',
     ],
 
     'login_page' => [

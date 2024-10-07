@@ -33,12 +33,14 @@ class ErrorLogHandler extends AbstractProcessingHandler
     /**
      * @param int  $messageType    Says where the error should go.
      * @param bool $expandNewlines If set to true, newlines in the message will be expanded to be take multiple log entries
+     *
+     * @throws \InvalidArgumentException If an unsupported message type is set
      */
     public function __construct(int $messageType = self::OPERATING_SYSTEM, int|string|Level $level = Level::Debug, bool $bubble = true, bool $expandNewlines = false)
     {
         parent::__construct($level, $bubble);
 
-        if (false === in_array($messageType, self::getAvailableTypes(), true)) {
+        if (false === \in_array($messageType, self::getAvailableTypes(), true)) {
             $message = sprintf('The given message type "%s" is not supported', print_r($messageType, true));
 
             throw new \InvalidArgumentException($message);

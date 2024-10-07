@@ -20,9 +20,6 @@ namespace Symfony\Polyfill\Intl\Icu\DateFormat;
  */
 class Hour1200Transformer extends HourTransformer
 {
-    /**
-     * {@inheritdoc}
-     */
     public function format(\DateTime $dateTime, int $length): string
     {
         $hourOfDay = $dateTime->format('g');
@@ -31,10 +28,7 @@ class Hour1200Transformer extends HourTransformer
         return $this->padLeft($hourOfDay, $length);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function normalizeHour(int $hour, string $marker = null): int
+    public function normalizeHour(int $hour, ?string $marker = null): int
     {
         if ('PM' === $marker) {
             $hour += 12;
@@ -43,17 +37,11 @@ class Hour1200Transformer extends HourTransformer
         return $hour;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReverseMatchingRegExp(int $length): string
     {
         return '\d{1,2}';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function extractDateOptions(string $matched, int $length): array
     {
         return [

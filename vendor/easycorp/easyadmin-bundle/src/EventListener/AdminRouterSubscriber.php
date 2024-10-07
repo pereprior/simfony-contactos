@@ -7,7 +7,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Contracts\Controller\CrudControllerInterface
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Controller\DashboardControllerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\AdminContextFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\ControllerFactory;
-use EasyCorp\Bundle\EasyAdminBundle\Registry\CrudControllerRegistry;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ControllerResolverInterface;
@@ -15,7 +14,6 @@ use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\Matcher\RequestMatcherInterface;
-use Twig\Environment;
 
 /**
  * This subscriber acts as a "proxy" of all backend requests. First, if the
@@ -33,22 +31,18 @@ use Twig\Environment;
 class AdminRouterSubscriber implements EventSubscriberInterface
 {
     private AdminContextFactory $adminContextFactory;
-    private CrudControllerRegistry $crudControllerRegistry;
     private ControllerFactory $controllerFactory;
     private ControllerResolverInterface $controllerResolver;
     private UrlGeneratorInterface $urlGenerator;
     private RequestMatcherInterface $requestMatcher;
-    private Environment $twig;
 
-    public function __construct(AdminContextFactory $adminContextFactory, CrudControllerRegistry $crudControllerRegistry, ControllerFactory $controllerFactory, ControllerResolverInterface $controllerResolver, UrlGeneratorInterface $urlGenerator, RequestMatcherInterface $requestMatcher, Environment $twig)
+    public function __construct(AdminContextFactory $adminContextFactory, ControllerFactory $controllerFactory, ControllerResolverInterface $controllerResolver, UrlGeneratorInterface $urlGenerator, RequestMatcherInterface $requestMatcher)
     {
         $this->adminContextFactory = $adminContextFactory;
-        $this->crudControllerRegistry = $crudControllerRegistry;
         $this->controllerFactory = $controllerFactory;
         $this->controllerResolver = $controllerResolver;
         $this->urlGenerator = $urlGenerator;
         $this->requestMatcher = $requestMatcher;
-        $this->twig = $twig;
     }
 
     public static function getSubscribedEvents(): array
@@ -85,9 +79,6 @@ class AdminRouterSubscriber implements EventSubscriberInterface
         }
 
         $request->attributes->set(EA::CONTEXT_REQUEST_ATTRIBUTE, $adminContext);
-
-        // this makes the AdminContext available in all templates as a short named variable
-        $this->twig->addGlobal('ea', $adminContext);
     }
 
     /**
@@ -106,7 +97,7 @@ class AdminRouterSubscriber implements EventSubscriberInterface
         // if the request is related to a CRUD controller, change the controller to be executed
         if (null !== $crudControllerInstance = $this->getCrudControllerInstance($request)) {
             $symfonyControllerFqcnCallable = [$crudControllerInstance, $request->query->get(EA::CRUD_ACTION)];
-            $symfonyControllerStringCallable = [\get_class($crudControllerInstance), $request->query->get(EA::CRUD_ACTION)];
+            $symfonyControllerStringCallable = [$crudControllerInstance::class, $request->query->get(EA::CRUD_ACTION)];
 
             // this makes Symfony believe that another controller is being executed
             // (e.g. this is needed for the autowiring of controller action arguments)
@@ -161,7 +152,7 @@ class AdminRouterSubscriber implements EventSubscriberInterface
         }
 
         if (\is_object($controller)) {
-            $controllerFqcn = \get_class($controller);
+            $controllerFqcn = $controller::class;
         }
 
         return is_subclass_of($controllerFqcn, DashboardControllerInterface::class) ? $controllerFqcn : null;
@@ -174,11 +165,7 @@ class AdminRouterSubscriber implements EventSubscriberInterface
 
     private function getCrudControllerInstance(Request $request): ?CrudControllerInterface
     {
-        if (null !== $crudId = $request->query->get(EA::CRUD_ID)) {
-            $crudControllerFqcn = $this->crudControllerRegistry->findCrudFqcnByCrudId($crudId);
-        } else {
-            $crudControllerFqcn = $request->query->get(EA::CRUD_CONTROLLER_FQCN);
-        }
+        $crudControllerFqcn = $request->query->get(EA::CRUD_CONTROLLER_FQCN);
 
         $crudAction = $request->query->get(EA::CRUD_ACTION);
 

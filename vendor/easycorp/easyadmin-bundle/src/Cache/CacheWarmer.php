@@ -28,7 +28,7 @@ final class CacheWarmer implements CacheWarmerInterface
         return false;
     }
 
-    public function warmUp(string $cacheDir): array
+    public function warmUp(string $cacheDir, ?string $buildDir = null): array
     {
         $allRoutes = $this->router->getRouteCollection();
         $dashboardRoutes = [];
@@ -37,7 +37,7 @@ final class CacheWarmer implements CacheWarmerInterface
         foreach ($allRoutes as $routeName => $route) {
             $controller = $route->getDefault('_controller') ?? '';
             // controller is defined as $router->add('admin', '/')->controller(DashboardController::class)
-            if (\is_string($controller) && !empty($controller) && class_exists($controller)) {
+            if (\is_string($controller) && '' !== $controller && class_exists($controller)) {
                 $controller .= '::__invoke';
             }
 
@@ -47,6 +47,11 @@ final class CacheWarmer implements CacheWarmerInterface
             }
 
             $controller = u($controller);
+            if ($controller->isEmpty()) {
+                // this happens e.g. when using 'lexik/jwt-authentication-bundle', which defines an empty controller
+                continue;
+            }
+
             if (!$controller->endsWith('::index') && !$controller->endsWith('::__invoke')) {
                 continue;
             }

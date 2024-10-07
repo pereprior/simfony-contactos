@@ -4,31 +4,44 @@ namespace EasyCorp\Bundle\EasyAdminBundle\Twig;
 
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\FieldLayoutDto;
-use EasyCorp\Bundle\EasyAdminBundle\Factory\FieldLayoutFactory;
+use EasyCorp\Bundle\EasyAdminBundle\Factory\FormLayoutFactory;
+use EasyCorp\Bundle\EasyAdminBundle\Provider\AdminContextProvider;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
+use Symfony\Component\AssetMapper\ImportMap\ImportMapRenderer;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Contracts\Translation\TranslatableInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
+use Twig\Error\RuntimeError;
 use Twig\Extension\AbstractExtension;
-use Twig\Extension\ExtensionInterface;
-use Twig\Extension\RuntimeExtensionInterface;
+use Twig\Extension\GlobalsInterface;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 
 /**
  * Defines the filters and functions used to render the bundle's templates.
+ * Also injects the admin context into Twig global variables as `ea` in order
+ * to be used by admin templates.
  *
  * @author Javier Eguiluz <javier.eguiluz@gmail.com>
  */
-class EasyAdminTwigExtension extends AbstractExtension
+class EasyAdminTwigExtension extends AbstractExtension implements GlobalsInterface
 {
     private ServiceLocator $serviceLocator;
+    private AdminContextProvider $adminContextProvider;
     private ?CsrfTokenManagerInterface $csrfTokenManager;
+    private ?ImportMapRenderer $importMapRenderer;
+    private TranslatorInterface $translator;
 
-    public function __construct(ServiceLocator $serviceLocator, ?CsrfTokenManagerInterface $csrfTokenManager)
+    public function __construct(ServiceLocator $serviceLocator, AdminContextProvider $adminContextProvider, ?CsrfTokenManagerInterface $csrfTokenManager, ?ImportMapRenderer $importMapRenderer, TranslatorInterface $translator)
     {
         $this->serviceLocator = $serviceLocator;
+        $this->adminContextProvider = $adminContextProvider;
         $this->csrfTokenManager = $csrfTokenManager;
+        $this->importMapRenderer = $importMapRenderer;
+        $this->translator = $translator;
     }
 
     public function getFunctions(): array
@@ -38,6 +51,7 @@ class EasyAdminTwigExtension extends AbstractExtension
             new TwigFunction('ea_csrf_token', [$this, 'renderCsrfToken']),
             new TwigFunction('ea_call_function_if_exists', [$this, 'callFunctionIfExists'], ['needs_environment' => true, 'is_safe' => ['html' => true]]),
             new TwigFunction('ea_create_field_layout', [$this, 'createFieldLayout']),
+            new TwigFunction('ea_importmap', [$this, 'renderImportmap'], ['is_safe' => ['html']]),
         ];
     }
 
@@ -49,6 +63,14 @@ class EasyAdminTwigExtension extends AbstractExtension
             new TwigFilter('ea_apply_filter_if_exists', [$this, 'applyFilterIfExists'], ['needs_environment' => true]),
             new TwigFilter('ea_as_string', [$this, 'representAsString']),
         ];
+    }
+
+    public function getGlobals(): array
+    {
+        $context = $this->adminContextProvider->getContext();
+
+        // when there's an admin context, make it available in all templates as a short named variable
+        return null === $context ? [] : ['ea' => $context];
     }
 
     /**
@@ -80,25 +102,38 @@ class EasyAdminTwigExtension extends AbstractExtension
         return (int) ($bytes / (1024 ** $factor)).@$size[$factor];
     }
 
-    // Code adapted from https://stackoverflow.com/a/48606773/2804294 (License: CC BY-SA 3.0)
+    /**
+     * Code adapted from https://stackoverflow.com/a/48606773/2804294 (License: CC BY-SA 3.0).
+     *
+     * @throws RuntimeError when twig runtime can't find the specified filter
+     */
     public function applyFilterIfExists(Environment $environment, $value, string $filterName, ...$filterArguments)
     {
+        /**
+         * Twig v2 will return TwigFilter|false.
+         *
+         * @var TwigFilter|false|null $filter
+         */
         $filter = $environment->getFilter($filterName);
-        if (false === $filter || null === $filter) {
+        if (null === $filter || false === $filter) {
             return $value;
         }
 
-        [$class, $method] = $filter->getCallable();
-        if ($class instanceof ExtensionInterface) {
-            return $filter->getCallable()($value, ...$filterArguments);
+        $callback = $filter->getCallable();
+        if (\is_callable($callback)) {
+            return \call_user_func($callback, $value, ...$filterArguments);
         }
 
-        $object = $environment->getRuntime($class);
-        if ($object instanceof RuntimeExtensionInterface && method_exists($object, $method)) {
-            return $object->$method($value, ...$filterArguments);
+        if (\is_array($callback) && 2 === \count($callback)) {
+            $callback = [$environment->getRuntime(array_shift($callback)), array_pop($callback)];
+            if (!\is_callable($callback)) {
+                throw new RuntimeError(sprintf('Unable to load runtime for filter: "%s"', $filterName));
+            }
+
+            return \call_user_func($callback, $value, ...$filterArguments);
         }
 
-        return null;
+        throw new RuntimeError(sprintf('Invalid callback for filter: "%s"', $filterName));
     }
 
     public function representAsString($value): string
@@ -124,15 +159,19 @@ class EasyAdminTwigExtension extends AbstractExtension
         }
 
         if (\is_object($value)) {
+            if ($value instanceof TranslatableInterface) {
+                return $value->trans($this->translator);
+            }
+
             if (method_exists($value, '__toString')) {
                 return (string) $value;
             }
 
             if (method_exists($value, 'getId')) {
-                return sprintf('%s #%s', \get_class($value), $value->getId());
+                return sprintf('%s #%s', $value::class, $value->getId());
             }
 
-            return sprintf('%s #%s', \get_class($value), substr(md5(spl_object_hash($value)), 0, 7));
+            return sprintf('%s #%s', $value::class, substr(md5(spl_object_hash($value)), 0, 7));
         }
 
         return '';
@@ -140,14 +179,14 @@ class EasyAdminTwigExtension extends AbstractExtension
 
     public function callFunctionIfExists(Environment $environment, string $functionName, ...$functionArguments)
     {
-        if (false === $function = $environment->getFunction($functionName)) {
+        if (null === $function = $environment->getFunction($functionName)) {
             return '';
         }
 
         return $function->getCallable()(...$functionArguments);
     }
 
-    public function getAdminUrlGenerator(array $queryParameters = []): AdminUrlGenerator
+    public function getAdminUrlGenerator(array $queryParameters = []): AdminUrlGeneratorInterface
     {
         return $this->serviceLocator->get(AdminUrlGenerator::class)->setAll($queryParameters);
     }
@@ -166,6 +205,25 @@ class EasyAdminTwigExtension extends AbstractExtension
 
     public function createFieldLayout(?FieldCollection $fieldDtos): FieldLayoutDto
     {
-        return FieldLayoutFactory::createFromFieldDtos($fieldDtos);
+        trigger_deprecation(
+            'easycorp/easyadmin-bundle',
+            '4.8.0',
+            'The "ea_create_field_layout()" Twig function is deprecated in favor of "ea_create_form_layout()" and it will be removed in 5.0.0.',
+        );
+
+        return FormLayoutFactory::createFromFieldDtos($fieldDtos);
+    }
+
+    /**
+     * We need to recreate the 'importmap()' Twig function from Symfony because calling it
+     * via 'ea_call_function_if_exists('importmap', '...')' doesn't work.
+     */
+    public function renderImportmap(string|array $entryPoint = 'app', array $attributes = []): string
+    {
+        if ('' === $entryPoint || [] === $entryPoint || null === $this->importMapRenderer) {
+            return '';
+        }
+
+        return $this->importMapRenderer->render($entryPoint, $attributes);
     }
 }

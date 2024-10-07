@@ -28,30 +28,48 @@ final class NumberConfigurator implements FieldConfiguratorInterface
 
     public function configure(FieldDto $field, EntityDto $entityDto, AdminContext $context): void
     {
-        if (null === $value = $field->getValue()) {
-            return;
-        }
-
         $scale = $field->getCustomOption(NumberField::OPTION_NUM_DECIMALS);
         $roundingMode = $field->getCustomOption(NumberField::OPTION_ROUNDING_MODE);
-        $isStoredAsString = $field->getCustomOption(NumberField::OPTION_STORED_AS_STRING);
+        $isStoredAsString = true === $field->getCustomOption(NumberField::OPTION_STORED_AS_STRING);
 
         $field->setFormTypeOptionIfNotSet('input', $isStoredAsString ? 'string' : 'number');
         $field->setFormTypeOptionIfNotSet('rounding_mode', $roundingMode);
         $field->setFormTypeOptionIfNotSet('scale', $scale);
+
+        if (null === $value = $field->getValue()) {
+            return;
+        }
 
         $formatterAttributes = ['rounding_mode' => $this->getRoundingModeAsString($roundingMode)];
         if (null !== $scale) {
             $formatterAttributes['fraction_digit'] = $scale;
         }
 
-        if (null !== $numberFormat = $field->getCustomOption(NumberField::OPTION_NUMBER_FORMAT)) {
+        $numberFormat = $field->getCustomOption(NumberField::OPTION_NUMBER_FORMAT)
+            ?? $context->getCrud()->getNumberFormat()
+            ?? null;
+
+        if (null !== $numberFormat) {
             $field->setFormattedValue(sprintf($numberFormat, $value));
-        } elseif (null !== $numberFormat = $context->getCrud()->getNumberFormat()) {
-            $field->setFormattedValue(sprintf($numberFormat, $value));
-        } else {
-            $field->setFormattedValue($this->intlFormatter->formatNumber($value, $formatterAttributes));
+
+            return;
         }
+
+        $thousandsSeparator = $field->getCustomOption(NumberField::OPTION_THOUSANDS_SEPARATOR)
+            ?? $context->getCrud()->getThousandsSeparator()
+            ?? null;
+        if (null !== $thousandsSeparator) {
+            $formatterAttributes['grouping_separator'] = $thousandsSeparator;
+        }
+
+        $decimalSeparator = $field->getCustomOption(NumberField::OPTION_DECIMAL_SEPARATOR)
+            ?? $context->getCrud()->getDecimalSeparator()
+            ?? null;
+        if (null !== $decimalSeparator) {
+            $formatterAttributes['decimal_separator'] = $decimalSeparator;
+        }
+
+        $field->setFormattedValue($this->intlFormatter->formatNumber($value, $formatterAttributes));
     }
 
     private function getRoundingModeAsString(int $mode): string

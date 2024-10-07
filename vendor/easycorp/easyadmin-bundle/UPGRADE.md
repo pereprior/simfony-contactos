@@ -1,6 +1,91 @@
 Upgrade between EasyAdmin 4.x versions
 ======================================
 
+EasyAdmin 4.11.0
+----------------
+
+### Updated the `MenuItemMatcherInterface`
+
+The `MenuItemMatcherInterface` has changed as follows:
+
+  * The `isSelected(MenuItemDto $menuItemDto)` method has been removed
+  * The `isExpanded(MenuItemDto $menuItemDto)` method has been removed
+  * A new `markSelectedMenuItem(array<MenuItemDto> $menuItems)` method has been added
+
+Read the comments in the code of the `MenuItemMatcher` class to learn about the
+new menu item matching logic.
+
+EasyAdmin 4.10.0
+----------------
+
+### Updated the Default Title of Detail Page
+
+The default title of the `detail` page in previous versions was `%entity_as_string%`
+which is a placeholder that refers to the value returned by the `__toString()`
+method of the entity.
+
+This can potentially result in a XSS vulnerability because page titles and other
+elements are rendered with the `raw` Twig filter (to allow you to customize the
+contents with HTML tags).
+
+Starting from EasyAdmin 4.10.0, the default page title is `%entity_label_singular% <small>(#%entity_short_id%)</small>`,
+which only contains safe items that will never result in a XSS issue. If you
+want to keep the previous page title (because you don't include user-generated
+contents in `__toString()` or because you sanitize all user-submitted data) you
+can add the following to your dashboard and all your CRUD controllers will use
+that page title:
+
+    class DashboardController extends AbstractDashboardController
+    {
+        // ...
+
+        public function configureCrud(Crud $crud): Crud
+        {
+            return $crud
+                // ...
+                ->setPageTitle('detail', '%entity_as_string%')
+            ;
+        }
+    }
+
+EasyAdmin 4.8.0
+---------------
+
+### Form Panels are now called Form Fieldsets
+
+You can still use `FormField::addPanel()` but it's deprecated and it will be
+removed in EasyAdmin 5.0.0. To fix the deprecation, "Find & Replace" in your IDE:
+
+    // Before
+    yield FormField::addPanel('...');
+
+    // After
+    yield FormField::addFieldset('...');
+
+If your application uses custom advanced features, you might need to change some
+other occurrences of "panel" such as CSS styles (`.form-panel` -> `.form-fieldset`)
+and form attributes in `CrudFormType` (`$formFieldOptions['ea_form_panel']` ->
+`$formFieldOptions['ea_form_fieldset'] = $currentFormFieldset`)
+
+EasyAdmin 4.6.0
+---------------
+
+### New formatted value for Country field
+
+This is a backward compatibility break that only affects you if you customize
+the default `crud/field/country.html.twig` template or if you use a custom
+template fo render `Country` fields.
+
+Starting from this EasyAdmin version, `Country` fields allow to select more
+than one value. That's why the type of the formatted value has changed from
+`?string` to `?array`. E.g. if the value of your entity property is `ES`;
+before, `field.formattedValue` stored the string `'Spain'` and now it stores
+the array `['ES' => 'Spain']`.
+
+The country code (used to display the country flag) is now the key of the new
+array. Before, you had to use an internal propery called `flagCode` which has
+been removed.
+
 EasyAdmin 4.4.0
 ---------------
 

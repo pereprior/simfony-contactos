@@ -93,6 +93,7 @@ export default class Autocomplete
     }
 
     #createAutocompleteWithRemoteData(element, autocompleteEndpointUrl) {
+        const renderOptionsAsHtml = 'true' === element.getAttribute('data-ea-autocomplete-render-items-as-html');
         const config = this.#mergeObjects(this.#getCommonConfig(element), {
             valueField: 'entityId',
             labelField: 'entityAsString',
@@ -111,6 +112,8 @@ export default class Autocomplete
                     .then(json => { this.setNextUrl(query, json.next_page); callback(json.results) })
                     .catch(() => callback());
             },
+            preload: 'focus',
+            maxOptions: null,
             // on remote calls, we don't want tomselect to further filter the results by "entityAsString"
             // this override causes all results to be returned with the sorting from the server
             score: function(search) {
@@ -120,10 +123,10 @@ export default class Autocomplete
             },
             render: {
                 option: function(item, escape) {
-                    return `<div>${item.entityAsString}</div>`;
+                    return `<div>${renderOptionsAsHtml ? item.entityAsString : escape(item.entityAsString)}</div>`;
                 },
                 item: function(item, escape) {
-                    return `<div>${item.entityAsString}</div>`;
+                    return `<div>${renderOptionsAsHtml ? item.entityAsString : escape(item.entityAsString)}</div>`;
                 },
                 loading_more: function(data, escape) {
                     return `<div class="loading-more-results">${element.getAttribute('data-ea-i18n-loading-more-results')}</div>`;

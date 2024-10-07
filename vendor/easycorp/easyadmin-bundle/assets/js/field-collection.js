@@ -36,7 +36,7 @@ const EaCollectionProperty = {
             // Remove the 'Empty Collection' badge, if present
             const emptyCollectionBadge = this.parentElement.querySelector('.collection-empty');
             if (null !== emptyCollectionBadge) {
-                emptyCollectionBadge.outerHTML = isArrayCollection ? '<div class="ea-form-collection-items"></div>' : '<div class="ea-form-collection-items"><div class="accordion"><div class="form-widget-compound"></div></div></div>';
+                emptyCollectionBadge.outerHTML = isArrayCollection ? '<div class="ea-form-collection-items"></div>' : '<div class="ea-form-collection-items"><div class="accordion"><div class="form-widget-compound"><div data-empty-collection></div></div></div></div>';
             }
 
             const formTypeNamePlaceholder = collection.dataset.formTypeNamePlaceholder;
@@ -44,11 +44,11 @@ const EaCollectionProperty = {
             const nameRegexp = new RegExp(formTypeNamePlaceholder, 'g');
 
             let newItemHtml = collection.dataset.prototype
-                .replace(labelRegexp, ++numItems)
+                .replace(labelRegexp, numItems)
                 .replace(nameRegexp, numItems);
 
-            collection.dataset.numItems = numItems;
-            const newItemInsertionSelector = isArrayCollection ? '.ea-form-collection-items' : '.ea-form-collection-items .accordion > .form-widget-compound';
+            collection.dataset.numItems = ++numItems;
+            const newItemInsertionSelector = isArrayCollection ? '.ea-form-collection-items' : '.ea-form-collection-items .accordion > .form-widget-compound [data-empty-collection]';
             const collectionItemsWrapper = collection.querySelector(newItemInsertionSelector);
 
             collectionItemsWrapper.insertAdjacentHTML('beforeend', newItemHtml);
@@ -67,7 +67,7 @@ const EaCollectionProperty = {
                 lastElementBody.classList.add('show');
             }
 
-            document.dispatchEvent(new Event('ea.collection.item-added'));
+            document.dispatchEvent(new CustomEvent('ea.collection.item-added', { detail: { newElement: lastElement }}));
         });
 
         collection.classList.add('processed');

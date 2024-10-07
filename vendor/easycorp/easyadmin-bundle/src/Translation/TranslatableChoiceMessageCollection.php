@@ -15,11 +15,11 @@ final class TranslatableChoiceMessageCollection implements TranslatableInterface
     public function __construct(
         /** @var TranslatableChoiceMessage[] */
         private array $choices,
-        private bool $isRenderedAsBadge
+        private bool $isRenderedAsBadge,
     ) {
     }
 
-    public function trans(TranslatorInterface $translator, string $locale = null): string
+    public function trans(TranslatorInterface $translator, ?string $locale = null): string
     {
         return implode(
             $this->isRenderedAsBadge ? '' : ', ',

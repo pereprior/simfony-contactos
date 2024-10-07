@@ -73,14 +73,34 @@ final class FieldCollection implements CollectionInterface
         unset($this->fields[$removedField->getUniqueId()]);
     }
 
+    public function add(FieldDto $newField): void
+    {
+        $this->fields[$newField->getUniqueId()] = $newField;
+    }
+
     public function prepend(FieldDto $newField): void
     {
         $this->fields = array_merge([$newField->getUniqueId() => $newField], $this->fields);
     }
 
+    public function insertBefore(FieldDto $newField, FieldDto $existingField): void
+    {
+        $newFields = [];
+        $existingFieldUniqueId = $existingField->getUniqueId();
+        foreach ($this->fields as $fieldUniqueId => $field) {
+            if ($existingFieldUniqueId === $fieldUniqueId) {
+                $newFields[$newField->getUniqueId()] = $newField;
+            }
+
+            $newFields[$fieldUniqueId] = $field;
+        }
+
+        $this->fields = $newFields;
+    }
+
     public function first(): ?FieldDto
     {
-        if (empty($this->fields)) {
+        if (0 === \count($this->fields)) {
             return null;
         }
 
@@ -118,7 +138,7 @@ final class FieldCollection implements CollectionInterface
     }
 
     /**
-     * @return FieldDto[]
+     * @return \ArrayIterator<FieldDto>
      */
     public function getIterator(): \ArrayIterator
     {
@@ -144,7 +164,7 @@ final class FieldCollection implements CollectionInterface
 
             $dto = $field->getAsDto();
             if (null === $dto->getFieldFqcn()) {
-                $dto->setFieldFqcn(\get_class($field));
+                $dto->setFieldFqcn($field::class);
             }
             $dtos[$dto->getUniqueId()] = $dto;
         }

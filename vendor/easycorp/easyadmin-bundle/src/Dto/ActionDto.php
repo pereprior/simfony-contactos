@@ -15,6 +15,7 @@ final class ActionDto
     private TranslatableInterface|string|null $label = null;
     private ?string $icon = null;
     private string $cssClass = '';
+    private string $addedCssClass = '';
     private ?string $htmlElement = null;
     private array $htmlAttributes = [];
     private ?string $linkUrl = null;
@@ -22,6 +23,7 @@ final class ActionDto
     private ?string $crudActionName = null;
     private ?string $routeName = null;
     private $routeParameters = [];
+    /* @var callable|string|null */
     private $url;
     private array $translationParameters = [];
     private $displayCallable;
@@ -61,12 +63,12 @@ final class ActionDto
         $this->name = $name;
     }
 
-    public function getLabel(): TranslatableInterface|string|null
+    public function getLabel(): TranslatableInterface|string|false|null
     {
         return $this->label;
     }
 
-    public function setLabel(TranslatableInterface|string|null $label): void
+    public function setLabel(TranslatableInterface|string|false|null $label): void
     {
         $this->label = $label;
     }
@@ -83,12 +85,22 @@ final class ActionDto
 
     public function getCssClass(): string
     {
-        return $this->cssClass;
+        return trim($this->cssClass);
     }
 
     public function setCssClass(string $cssClass): void
     {
         $this->cssClass = $cssClass;
+    }
+
+    public function getAddedCssClass(): string
+    {
+        return trim($this->addedCssClass);
+    }
+
+    public function setAddedCssClass(string $cssClass): void
+    {
+        $this->addedCssClass .= ' '.$cssClass;
     }
 
     public function getHtmlElement(): string
@@ -172,10 +184,9 @@ final class ActionDto
     /**
      * @param array|callable $routeParameters
      */
-    public function setRouteParameters(/* array|callable */ $routeParameters): void
+    public function setRouteParameters($routeParameters): void
     {
-        if (!\is_array($routeParameters)
-            && !\is_callable($routeParameters)) {
+        if (!\is_array($routeParameters) && !\is_callable($routeParameters)) {
             trigger_deprecation(
                 'easycorp/easyadmin-bundle',
                 '4.0.5',
@@ -191,9 +202,9 @@ final class ActionDto
     }
 
     /**
-     * @return string|callable
+     * @return string|callable|null
      */
-    public function getUrl()/* : string|callable */
+    public function getUrl()
     {
         return $this->url;
     }
@@ -201,10 +212,9 @@ final class ActionDto
     /**
      * @param string|callable $url
      */
-    public function setUrl(/* string|callable */ $url): void
+    public function setUrl($url): void
     {
-        if (!\is_string($url)
-            && !\is_callable($url)) {
+        if (!\is_string($url) && !\is_callable($url)) {
             trigger_deprecation(
                 'easycorp/easyadmin-bundle',
                 '4.0.5',
@@ -231,7 +241,19 @@ final class ActionDto
 
     public function shouldBeDisplayedFor(EntityDto $entityDto): bool
     {
-        return null === $this->displayCallable || \call_user_func($this->displayCallable, $entityDto->getInstance());
+        trigger_deprecation(
+            'easycorp/easyadmin-bundle',
+            '4.9.4',
+            'The "%s" method is deprecated and it will be removed in 5.0.0 because it\'s been replaced by the method "isDisplayed()" of the same class.',
+            __METHOD__,
+        );
+
+        return $this->isDisplayed($entityDto);
+    }
+
+    public function isDisplayed(?EntityDto $entityDto = null): bool
+    {
+        return null === $this->displayCallable || (bool) \call_user_func($this->displayCallable, $entityDto?->getInstance());
     }
 
     public function setDisplayCallable(callable $displayCallable): void
@@ -246,6 +268,7 @@ final class ActionDto
     {
         $action = Action::new($this->name, $this->label, $this->icon);
         $action->setCssClass($this->cssClass);
+        $action->addCssClass($this->addedCssClass);
         $action->setHtmlAttributes($this->htmlAttributes);
         $action->setTranslationParameters($this->translationParameters);
 

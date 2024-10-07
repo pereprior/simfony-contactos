@@ -24,7 +24,6 @@ final class IntlFormatter
         'int32' => \NumberFormatter::TYPE_INT32,
         'int64' => \NumberFormatter::TYPE_INT64,
         'double' => \NumberFormatter::TYPE_DOUBLE,
-        'currency' => \NumberFormatter::TYPE_CURRENCY,
     ];
     private const NUMBER_STYLES = [
         'decimal' => \NumberFormatter::DECIMAL,
@@ -77,7 +76,7 @@ final class IntlFormatter
         'negative_prefix' => \NumberFormatter::NEGATIVE_PREFIX,
         'negative_suffix' => \NumberFormatter::NEGATIVE_SUFFIX,
         'padding_character' => \NumberFormatter::PADDING_CHARACTER,
-        'currency_mode' => \NumberFormatter::CURRENCY_CODE,
+        'currency_code' => \NumberFormatter::CURRENCY_CODE,
         'default_ruleset' => \NumberFormatter::DEFAULT_RULESET,
         'public_rulesets' => \NumberFormatter::PUBLIC_RULESETS,
     ];
@@ -102,23 +101,37 @@ final class IntlFormatter
         'monetary_grouping_separator' => \NumberFormatter::MONETARY_GROUPING_SEPARATOR_SYMBOL,
     ];
 
-    private $dateFormatters = [];
-    private $numberFormatters = [];
-    private $numberFormatterPrototype;
+    private array $dateFormatters = [];
+    private array $numberFormatters = [];
 
-    public function formatCurrency($amount, string $currency, array $attrs = [], string $locale = null): string
+    public function formatCurrency($amount, string $currency, array $attrs = [], ?string $locale = null): string
     {
         $formatter = $this->createNumberFormatter($locale, 'currency', $attrs);
-
-        if (false === $formattedCurrency = $formatter->formatCurrency($amount, $currency)) {
+        /** @var string|false $formattedCurrency */
+        $formattedCurrency = $formatter->formatCurrency($amount, $currency);
+        if (false === $formattedCurrency) {
             throw new RuntimeError('Unable to format the given number as a currency.');
         }
 
         return $formattedCurrency;
     }
 
-    public function formatNumber($number, array $attrs = [], string $style = 'decimal', string $type = 'default', string $locale = null): string
+    /**
+     * @param int|float $number
+     */
+    public function formatNumber($number, array $attrs = [], string $style = 'decimal', string $type = 'default', ?string $locale = null): string
     {
+        if (null === $number) {
+            trigger_deprecation(
+                'easycorp/easyadmin-bundle',
+                '4.8.5',
+                'Passing null values to "%s()" method is deprecated and will throw an exception in EasyAdmin 5.0.0.',
+                __METHOD__,
+            );
+
+            return '0';
+        }
+
         if (!isset(self::NUMBER_TYPES[$type])) {
             throw new RuntimeError(sprintf('The type "%s" does not exist, known types are: "%s".', $type, implode('", "', array_keys(self::NUMBER_TYPES))));
         }
@@ -135,7 +148,7 @@ final class IntlFormatter
     /**
      * @param \DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      */
-    public function formatDateTime(?\DateTimeInterface $date, ?string $dateFormat = 'medium', ?string $timeFormat = 'medium', string $pattern = '', $timezone = null, string $calendar = 'gregorian', string $locale = null): ?string
+    public function formatDateTime(?\DateTimeInterface $date, ?string $dateFormat = 'medium', ?string $timeFormat = 'medium', string $pattern = '', $timezone = null, string $calendar = 'gregorian', ?string $locale = null): ?string
     {
         if (null === $date = $this->convertDate($date, $timezone)) {
             return null;
@@ -150,7 +163,7 @@ final class IntlFormatter
     /**
      * @param \DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      */
-    public function formatDate(?\DateTimeInterface $date, ?string $dateFormat = 'medium', string $pattern = '', $timezone = null, string $calendar = 'gregorian', string $locale = null): ?string
+    public function formatDate(?\DateTimeInterface $date, ?string $dateFormat = 'medium', string $pattern = '', $timezone = null, string $calendar = 'gregorian', ?string $locale = null): ?string
     {
         return $this->formatDateTime($date, $dateFormat, 'none', $pattern, $timezone, $calendar, $locale);
     }
@@ -158,12 +171,12 @@ final class IntlFormatter
     /**
      * @param \DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      */
-    public function formatTime(?\DateTimeInterface $date, ?string $timeFormat = 'medium', string $pattern = '', $timezone = null, string $calendar = 'gregorian', string $locale = null): ?string
+    public function formatTime(?\DateTimeInterface $date, ?string $timeFormat = 'medium', string $pattern = '', $timezone = null, string $calendar = 'gregorian', ?string $locale = null): ?string
     {
         return $this->formatDateTime($date, 'none', $timeFormat, $pattern, $timezone, $calendar, $locale);
     }
 
-    private function createDateFormatter(?string $locale, ?string $dateFormat, ?string $timeFormat, string $pattern = '', \DateTimeZone $timezone = null, string $calendarName = 'gregorian'): \IntlDateFormatter
+    private function createDateFormatter(?string $locale, ?string $dateFormat, ?string $timeFormat, string $pattern = '', ?\DateTimeZone $timezone = null, string $calendarName = 'gregorian'): \IntlDateFormatter
     {
         if (null !== $dateFormat && !isset(self::DATE_FORMATS[$dateFormat])) {
             throw new RuntimeError(sprintf('The date format "%s" does not exist, known formats are: "%s".', $dateFormat, implode('", "', array_keys(self::DATE_FORMATS))));
@@ -201,34 +214,24 @@ final class IntlFormatter
             $locale = \Locale::getDefault();
         }
 
-        // textAttrs and symbols can only be set on the prototype as there is probably no
-        // use case for setting it on each call.
         $textAttrs = [];
+        foreach ($attrs as $name => $value) {
+            if (isset(self::NUMBER_TEXT_ATTRIBUTES[$name])) {
+                $textAttrs[$name] = $value;
+                unset($attrs[$name]);
+            }
+        }
+
         $symbols = [];
-        if ($this->numberFormatterPrototype) {
-            foreach (self::NUMBER_ATTRIBUTES as $name => $const) {
-                if (!isset($attrs[$name])) {
-                    $value = $this->numberFormatterPrototype->getAttribute($const);
-                    if ('rounding_mode' === $name) {
-                        $value = array_flip(self::NUMBER_ROUNDING_ATTRIBUTES)[$value];
-                    } elseif ('padding_position' === $name) {
-                        $value = array_flip(self::NUMBER_PADDING_ATTRIBUTES)[$value];
-                    }
-                    $attrs[$name] = $value;
-                }
-            }
-
-            foreach (self::NUMBER_TEXT_ATTRIBUTES as $name => $const) {
-                $textAttrs[$name] = $this->numberFormatterPrototype->getTextAttribute($const);
-            }
-
-            foreach (self::NUMBER_SYMBOLS as $name => $const) {
-                $symbols[$name] = $this->numberFormatterPrototype->getSymbol($const);
+        foreach ($attrs as $name => $value) {
+            if (isset(self::NUMBER_SYMBOLS[$name])) {
+                $symbols[$name] = $value;
+                unset($attrs[$name]);
             }
         }
 
         ksort($attrs);
-        $hash = sprintf('%s|%s|%s|%s|%s', $locale, $style, json_encode($attrs, \JSON_THROW_ON_ERROR), json_encode($textAttrs, \JSON_THROW_ON_ERROR), json_encode($symbols, \JSON_THROW_ON_ERROR));
+        $hash = $locale.'|'.$style.'|'.json_encode($attrs).'|'.json_encode($textAttrs).'|'.json_encode($symbols);
 
         if (!isset($this->numberFormatters[$hash])) {
             $this->numberFormatters[$hash] = new \NumberFormatter($locale, self::NUMBER_STYLES[$style]);
@@ -280,7 +283,7 @@ final class IntlFormatter
         }
 
         if ($date instanceof \DateTimeImmutable) {
-            return false !== $timezone ? $date->setTimezone($timezone) : $date;
+            return $date->setTimezone($timezone);
         }
 
         $date = clone $date;

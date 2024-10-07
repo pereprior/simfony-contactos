@@ -59,6 +59,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Exception\InvalidCsrfTokenException;
 use function Symfony\Component\String\u;
 
@@ -126,7 +127,6 @@ abstract class AbstractCrudController extends AbstractController implements Crud
         }
 
         $fields = FieldCollection::new($this->configureFields(Crud::PAGE_INDEX));
-        $context->getCrud()->setFieldAssets($this->getFieldAssets($fields));
         $filters = $this->container->get(FilterFactory::class)->create($context->getCrud()->getFiltersConfig(), $fields, $context->getEntity());
         $queryBuilder = $this->createIndexQueryBuilder($context->getSearch(), $context->getEntity(), $fields, $filters);
         $paginator = $this->container->get(PaginatorFactory::class)->create($queryBuilder);
@@ -141,6 +141,8 @@ abstract class AbstractCrudController extends AbstractController implements Crud
 
         $entities = $this->container->get(EntityFactory::class)->createCollection($context->getEntity(), $paginator->getResults());
         $this->container->get(EntityFactory::class)->processFieldsForAll($entities, $fields);
+        $procesedFields = $entities->first()?->getFields() ?? FieldCollection::new([]);
+        $context->getCrud()->setFieldAssets($this->getFieldAssets($procesedFields));
         $actions = $this->container->get(EntityFactory::class)->processActionsForAll($entities, $context->getCrud()->getActionsConfig());
 
         $responseParameters = $this->configureResponseParameters(KeyValueStore::new([
@@ -236,16 +238,15 @@ abstract class AbstractCrudController extends AbstractController implements Crud
 
             try {
                 $event = $this->ajaxEdit($context->getEntity(), $fieldName, $newValue);
-            } catch (\Exception) {
-                throw new BadRequestHttpException();
+            } catch (\Exception $e) {
+                throw new BadRequestHttpException($e->getMessage());
             }
 
             if ($event->isPropagationStopped()) {
                 return $event->getResponse();
             }
 
-            // cast to integer instead of string to avoid sending empty responses for 'false'
-            return new Response((int) $newValue);
+            return new Response($newValue ? '1' : '0');
         }
 
         $editForm = $this->createEditForm($context->getEntity(), $context->getCrud()->getEditFormOptions(), $context);
@@ -457,10 +458,10 @@ abstract class AbstractCrudController extends AbstractController implements Crud
 
         /** @var CrudControllerInterface $controller */
         $controller = $this->container->get(ControllerFactory::class)->getCrudControllerInstance($autocompleteContext[EA::CRUD_CONTROLLER_FQCN], Action::INDEX, $context->getRequest());
-        /** @var FieldDto $field */
+        /** @var FieldDto|null $field */
         $field = FieldCollection::new($controller->configureFields($autocompleteContext['originatingPage']))->getByProperty($autocompleteContext['propertyName']);
         /** @var \Closure|null $queryBuilderCallable */
-        $queryBuilderCallable = $field->getCustomOption(AssociationField::OPTION_QUERY_BUILDER_CALLABLE);
+        $queryBuilderCallable = $field?->getCustomOption(AssociationField::OPTION_QUERY_BUILDER_CALLABLE);
 
         if (null !== $queryBuilderCallable) {
             $queryBuilderCallable($queryBuilder);
@@ -482,7 +483,7 @@ abstract class AbstractCrudController extends AbstractController implements Crud
         $this->container->get(EntityFactory::class)->processFields($context->getEntity(), $fields);
         $filters = $this->container->get(FilterFactory::class)->create($context->getCrud()->getFiltersConfig(), $context->getEntity()->getFields(), $context->getEntity());
 
-        /** @var FiltersFormType $filtersForm */
+        /** @var FormInterface&FiltersFormType $filtersForm */
         $filtersForm = $this->container->get(FormFactory::class)->createFiltersForm($filters, $context->getRequest());
         $formActionParts = parse_url($filtersForm->getConfig()->getAction());
         $queryString = $formActionParts[EA::QUERY] ?? '';
@@ -556,6 +557,11 @@ abstract class AbstractCrudController extends AbstractController implements Crud
 
     protected function ajaxEdit(EntityDto $entityDto, ?string $propertyName, bool $newValue): AfterCrudActionEvent
     {
+        $field = $entityDto->getFields()->getByProperty($propertyName);
+        if (null === $field || true === $field->getFormTypeOption('disabled')) {
+            throw new AccessDeniedException(sprintf('The field "%s" does not exist or it\'s configured as disabled, so it can\'t be modified.', $propertyName));
+        }
+
         $this->container->get(EntityUpdater::class)->updateProperty($entityDto, $propertyName, $newValue);
 
         $event = new BeforeEntityUpdatedEvent($entityDto->getInstance());
@@ -624,29 +630,18 @@ abstract class AbstractCrudController extends AbstractController implements Crud
     {
         $submitButtonName = $context->getRequest()->request->all()['ea']['newForm']['btn'];
 
-        if (Action::SAVE_AND_CONTINUE === $submitButtonName) {
-            $url = $this->container->get(AdminUrlGenerator::class)
+        $url = match ($submitButtonName) {
+            Action::SAVE_AND_CONTINUE => $this->container->get(AdminUrlGenerator::class)
                 ->setAction(Action::EDIT)
                 ->setEntityId($context->getEntity()->getPrimaryKeyValue())
-                ->generateUrl();
+                ->generateUrl(),
+            Action::SAVE_AND_RETURN => $context->getReferrer()
+                ?? $this->container->get(AdminUrlGenerator::class)->setAction(Action::INDEX)->generateUrl(),
+            Action::SAVE_AND_ADD_ANOTHER => $this->container->get(AdminUrlGenerator::class)->setAction(Action::NEW)->generateUrl(),
+            default => $this->generateUrl($context->getDashboardRouteName()),
+        };
 
-            return $this->redirect($url);
-        }
-
-        if (Action::SAVE_AND_RETURN === $submitButtonName) {
-            $url = $context->getReferrer()
-                ?? $this->container->get(AdminUrlGenerator::class)->setAction(Action::INDEX)->generateUrl();
-
-            return $this->redirect($url);
-        }
-
-        if (Action::SAVE_AND_ADD_ANOTHER === $submitButtonName) {
-            $url = $this->container->get(AdminUrlGenerator::class)->setAction(Action::NEW)->generateUrl();
-
-            return $this->redirect($url);
-        }
-
-        return $this->redirectToRoute($context->getDashboardRouteName());
+        return $this->redirect($url);
     }
 
     protected function getFieldAssets(FieldCollection $fieldDtos): AssetsDto

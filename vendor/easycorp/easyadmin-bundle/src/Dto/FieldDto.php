@@ -4,7 +4,19 @@ namespace EasyCorp\Bundle\EasyAdminBundle\Dto;
 
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
-use function Symfony\Component\String\u;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Type\EaFormFieldsetType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Type\Layout\EaFormColumnCloseType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Type\Layout\EaFormColumnGroupCloseType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Type\Layout\EaFormColumnGroupOpenType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Type\Layout\EaFormColumnOpenType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Type\Layout\EaFormFieldsetCloseType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Type\Layout\EaFormFieldsetOpenType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Type\Layout\EaFormTabListType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Type\Layout\EaFormTabPaneCloseType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Type\Layout\EaFormTabPaneGroupCloseType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Type\Layout\EaFormTabPaneGroupOpenType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Type\Layout\EaFormTabPaneOpenType;
+use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\Translation\TranslatableInterface;
 
@@ -23,7 +35,7 @@ final class FieldDto
     private KeyValueStore $formTypeOptions;
     private ?bool $sortable = null;
     private ?bool $virtual = null;
-    private ?string $permission = null;
+    private string|Expression|null $permission = null;
     private ?string $textAlign = null;
     private $help;
     private string $cssClass = '';
@@ -80,7 +92,47 @@ final class FieldDto
 
     public function isFormDecorationField(): bool
     {
-        return null !== u($this->getCssClass())->containsAny(['field-form_panel', 'field-form_tab']);
+        trigger_deprecation(
+            'easycorp/easyadmin-bundle',
+            '4.8.0',
+            '"FieldDto::isFormDecorationField()" has been deprecated in favor of "FieldDto::isFormLayoutField()" and it will be removed in 5.0.0.',
+        );
+
+        return $this->isFormLayoutField();
+    }
+
+    public function isFormLayoutField(): bool
+    {
+        $formLayoutFieldClasses = [
+            EaFormTabListType::class,
+            EaFormTabPaneGroupOpenType::class,
+            EaFormTabPaneGroupCloseType::class,
+            EaFormTabPaneOpenType::class,
+            EaFormTabPaneCloseType::class,
+            EaFormColumnGroupOpenType::class,
+            EaFormColumnGroupCloseType::class,
+            EaFormColumnOpenType::class,
+            EaFormColumnCloseType::class,
+            EaFormFieldsetOpenType::class,
+            EaFormFieldsetCloseType::class,
+        ];
+
+        return \in_array($this->formType, $formLayoutFieldClasses, true);
+    }
+
+    public function isFormFieldset(): bool
+    {
+        return \in_array($this->formType, [EaFormFieldsetType::class, EaFormFieldsetOpenType::class], true);
+    }
+
+    public function isFormTab(): bool
+    {
+        return EaFormTabPaneOpenType::class === $this->formType;
+    }
+
+    public function isFormColumn(): bool
+    {
+        return EaFormColumnOpenType::class === $this->formType;
     }
 
     public function getFieldFqcn(): ?string
@@ -147,7 +199,7 @@ final class FieldDto
     /**
      * @return TranslatableInterface|string|false|null
      */
-    public function getLabel()/* : TranslatableInterface|string|false|null */
+    public function getLabel()
     {
         return $this->label;
     }
@@ -155,12 +207,9 @@ final class FieldDto
     /**
      * @param TranslatableInterface|string|false|null $label
      */
-    public function setLabel(/* TranslatableInterface|string|false|null */ $label): void
+    public function setLabel($label): void
     {
-        if (!\is_string($label)
-            && !$label instanceof TranslatableInterface
-            && false !== $label
-            && null !== $label) {
+        if (!\is_string($label) && !$label instanceof TranslatableInterface && false !== $label && null !== $label) {
             trigger_deprecation(
                 'easycorp/easyadmin-bundle',
                 '4.0.5',
@@ -203,7 +252,7 @@ final class FieldDto
     }
 
     /**
-     * @param $optionName You can use "dot" notation to set nested options (e.g. 'attr.class')
+     * @param string $optionName You can use "dot" notation to set nested options (e.g. 'attr.class')
      */
     public function setFormTypeOption(string $optionName, mixed $optionValue): void
     {
@@ -211,7 +260,7 @@ final class FieldDto
     }
 
     /**
-     * @param $optionName You can use "dot" notation to set nested options (e.g. 'attr.class')
+     * @param string $optionName You can use "dot" notation to set nested options (e.g. 'attr.class')
      */
     public function setFormTypeOptionIfNotSet(string $optionName, mixed $optionValue): void
     {
@@ -248,12 +297,12 @@ final class FieldDto
         $this->textAlign = $textAlign;
     }
 
-    public function getPermission(): ?string
+    public function getPermission(): string|Expression|null
     {
         return $this->permission;
     }
 
-    public function setPermission(string $permission): void
+    public function setPermission(string|Expression $permission): void
     {
         $this->permission = $permission;
     }
@@ -351,6 +400,11 @@ final class FieldDto
     public function setAssets(AssetsDto $assets): void
     {
         $this->assets = $assets;
+    }
+
+    public function addAssetMapperEncoreAsset(AssetDto $assetDto): void
+    {
+        $this->assets->addAssetMapperAsset($assetDto);
     }
 
     public function addWebpackEncoreAsset(AssetDto $assetDto): void

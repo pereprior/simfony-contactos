@@ -3,7 +3,7 @@
 return [
     'page_title' => [
         'dashboard' => 'Inicio',
-        'detail' => '%entity_as_string%',
+        'detail' => '%entity_label_singular% <small>(#%entity_short_id%)</small>',
         'edit' => 'Modificar %entity_label_singular%',
         'index' => '%entity_label_plural%',
         'new' => 'Crear %entity_label_singular%',
@@ -100,6 +100,7 @@ return [
     'form' => [
         'are_you_sure' => 'No has guardado los cambios realizados en este formulario.',
         'tab.error_badge_title' => 'Hay un campo inválido|Hay %count% campos inválidos',
+        'slug.confirm_text' => 'Si cambias el slug, puedes romper enlaces en otras páginas.',
     ],
 
     'user' => [

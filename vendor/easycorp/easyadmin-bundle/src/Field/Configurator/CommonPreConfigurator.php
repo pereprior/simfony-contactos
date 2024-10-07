@@ -2,15 +2,18 @@
 
 namespace EasyCorp\Bundle\EasyAdminBundle\Field\Configurator;
 
+use Doctrine\ORM\Mapping\JoinColumnMapping;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Field\FieldConfiguratorInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto;
+use EasyCorp\Bundle\EasyAdminBundle\Factory\EntityFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AvatarField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
+use Symfony\Component\PropertyAccess\Exception\UnexpectedTypeException;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use function Symfony\Component\String\u;
 use function Symfony\Component\Translation\t;
@@ -22,10 +25,12 @@ use Symfony\Contracts\Translation\TranslatableInterface;
 final class CommonPreConfigurator implements FieldConfiguratorInterface
 {
     private PropertyAccessorInterface $propertyAccessor;
+    private EntityFactory $entityFactory;
 
-    public function __construct(PropertyAccessorInterface $propertyAccessor)
+    public function __construct(PropertyAccessorInterface $propertyAccessor, EntityFactory $entityFactory)
     {
         $this->propertyAccessor = $propertyAccessor;
+        $this->entityFactory = $entityFactory;
     }
 
     public function supports(FieldDto $field, EntityDto $entityDto): bool
@@ -44,7 +49,7 @@ final class CommonPreConfigurator implements FieldConfiguratorInterface
         if (null === $value = $field->getValue()) {
             try {
                 $value = null === $entityDto->getInstance() ? null : $this->propertyAccessor->getValue($entityDto->getInstance(), $field->getProperty());
-            } catch (AccessException) {
+            } catch (AccessException|UnexpectedTypeException) {
                 $isReadable = false;
             }
 
@@ -78,7 +83,7 @@ final class CommonPreConfigurator implements FieldConfiguratorInterface
             $field->setFormTypeOptionIfNotSet('help_html', true);
         }
 
-        if (!empty($field->getCssClass())) {
+        if ('' !== $field->getCssClass()) {
             $field->setFormTypeOptionIfNotSet('row_attr.class', $field->getCssClass());
         }
 
@@ -112,7 +117,7 @@ final class CommonPreConfigurator implements FieldConfiguratorInterface
                 return $label;
             }
 
-            return empty($label) ? $label : t($label, $field->getTranslationParameters(), $translationDomain);
+            return (null === $label || false === $label || '' === $label) ? $label : t($label, $field->getTranslationParameters(), $translationDomain);
         }
 
         // if an Avatar field doesn't define its label, don't autogenerate it for the 'index' page
@@ -127,7 +132,7 @@ final class CommonPreConfigurator implements FieldConfiguratorInterface
             $label = $this->humanizeString($field->getProperty());
         }
 
-        if (empty($label)) {
+        if ('' === $label || false === $label) {
             return $label;
         }
 
@@ -191,9 +196,25 @@ final class CommonPreConfigurator implements FieldConfiguratorInterface
 
         // If at least one join column of an association field isn't nullable then the field is "required" by default, otherwise the field is optional
         if ($entityDto->isAssociation($field->getProperty())) {
+            $associatedEntityMetadata = $this->entityFactory->getEntityMetadata($doctrinePropertyMetadata->get('targetEntity'));
             foreach ($doctrinePropertyMetadata->get('joinColumns', []) as $joinColumn) {
-                if (\array_key_exists('nullable', $joinColumn) && false === $joinColumn['nullable']) {
-                    return true;
+                if (true === $doctrinePropertyMetadata->get('isOwningSide', true)) {
+                    if ($joinColumn instanceof JoinColumnMapping) {
+                        $isNullable = $joinColumn->nullable ?? true;
+                    } else {
+                        $isNullable = $joinColumn['nullable'] ?? true;
+                    }
+                    if (false === $isNullable) {
+                        return true;
+                    }
+                } else {
+                    $propertyNameInAssociatedEntity = $joinColumn instanceof JoinColumnMapping ? $joinColumn->referencedColumnName : $joinColumn['referencedColumnName'];
+                    $associatedPropertyMetadata = $associatedEntityMetadata->fieldMappings[$propertyNameInAssociatedEntity] ?? [];
+                    $isNullable = $associatedPropertyMetadata['nullable'] ?? true;
+
+                    if (false === $isNullable) {
+                        return true;
+                    }
                 }
             }
 
@@ -206,7 +227,9 @@ final class CommonPreConfigurator implements FieldConfiguratorInterface
             return false;
         }
 
-        return !$doctrinePropertyMetadata->get('nullable');
+        $nullable = $doctrinePropertyMetadata->get('nullable');
+
+        return false === $nullable || null === $nullable;
     }
 
     private function humanizeString(string $string): string

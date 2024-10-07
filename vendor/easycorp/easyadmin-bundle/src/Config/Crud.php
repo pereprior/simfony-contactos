@@ -2,10 +2,13 @@
 
 namespace EasyCorp\Bundle\EasyAdminBundle\Config;
 
+use EasyCorp\Bundle\EasyAdminBundle\Config\Option\SearchMode;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Option\SortOrder;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\CrudDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\FilterConfigDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\PaginatorDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
+use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Contracts\Translation\TranslatableInterface;
 
 /**
@@ -43,12 +46,12 @@ class Crud
 
     /**
      * @param TranslatableInterface|string|callable $label The callable signature is: fn ($entityInstance, $pageName): string
+     *
+     * @psalm-param mixed $label
      */
-    public function setEntityLabelInSingular(/* TranslatableInterface|string|callable */ $label): self
+    public function setEntityLabelInSingular($label): self
     {
-        if (!\is_string($label)
-            && !$label instanceof TranslatableInterface
-            && !\is_callable($label)) {
+        if (!\is_string($label) && !$label instanceof TranslatableInterface && !\is_callable($label)) {
             trigger_deprecation(
                 'easycorp/easyadmin-bundle',
                 '4.0.5',
@@ -67,12 +70,12 @@ class Crud
 
     /**
      * @param TranslatableInterface|string|callable $label The callable signature is: fn ($entityInstance, $pageName): string
+     *
+     * @psalm-param mixed $label
      */
-    public function setEntityLabelInPlural(/* TranslatableInterface|string|callable */ $label): self
+    public function setEntityLabelInPlural($label): self
     {
-        if (!\is_string($label)
-            && !$label instanceof TranslatableInterface
-            && !\is_callable($label)) {
+        if (!\is_string($label) && !$label instanceof TranslatableInterface && !\is_callable($label)) {
             trigger_deprecation(
                 'easycorp/easyadmin-bundle',
                 '4.0.5',
@@ -91,12 +94,12 @@ class Crud
 
     /**
      * @param TranslatableInterface|string|callable $title The callable signature is: fn ($entityInstance): string
+     *
+     * @psalm-param mixed $title
      */
-    public function setPageTitle(string $pageName, /* TranslatableInterface|string|callable */ $title): self
+    public function setPageTitle(string $pageName, $title): self
     {
-        if (!\is_string($title)
-            && !$title instanceof TranslatableInterface
-            && !\is_callable($title)) {
+        if (!\is_string($title) && !$title instanceof TranslatableInterface && !\is_callable($title)) {
             trigger_deprecation(
                 'easycorp/easyadmin-bundle',
                 '4.0.5',
@@ -142,8 +145,7 @@ class Crud
             throw new \InvalidArgumentException(sprintf('The first argument of the "%s()" method cannot be "%s" or an empty string. Use either the special date formats (%s) or a datetime Intl pattern.', __METHOD__, DateTimeField::FORMAT_NONE, implode(', ', $validDateFormatsWithoutNone)));
         }
 
-        $datePattern = DateTimeField::INTL_DATE_PATTERNS[$formatOrPattern] ?? $formatOrPattern;
-        $this->dto->setDatePattern($datePattern);
+        $this->dto->setDatePattern($formatOrPattern);
 
         return $this;
     }
@@ -162,8 +164,7 @@ class Crud
             throw new \InvalidArgumentException(sprintf('The first argument of the "%s()" method cannot be "%s" or an empty string. Use either the special time formats (%s) or a datetime Intl pattern.', __METHOD__, DateTimeField::FORMAT_NONE, implode(', ', $validTimeFormatsWithoutNone)));
         }
 
-        $timePattern = DateTimeField::INTL_TIME_PATTERNS[$formatOrPattern] ?? $formatOrPattern;
-        $this->dto->setTimePattern($timePattern);
+        $this->dto->setTimePattern($formatOrPattern);
 
         return $this;
     }
@@ -178,7 +179,7 @@ class Crud
             throw new \InvalidArgumentException(sprintf('The first argument of the "%s()" method cannot be an empty string. Use either a date format (%s) or a datetime Intl pattern.', __METHOD__, implode(', ', DateTimeField::VALID_DATE_FORMATS)));
         }
 
-        $datePatternIsEmpty = DateTimeField::FORMAT_NONE === $dateFormatOrPattern || '' === trim($dateFormatOrPattern);
+        $datePatternIsEmpty = DateTimeField::FORMAT_NONE === $dateFormatOrPattern;
         $timePatternIsEmpty = DateTimeField::FORMAT_NONE === $timeFormat || '' === trim($timeFormat);
         if ($datePatternIsEmpty && $timePatternIsEmpty) {
             throw new \InvalidArgumentException(sprintf('The values of the arguments of "%s()" cannot be "%s" or an empty string at the same time. Change any of them (or both).', __METHOD__, DateTimeField::FORMAT_NONE));
@@ -198,7 +199,7 @@ class Crud
         }
 
         if (!$isDatePattern && !\in_array($timeFormat, DateTimeField::VALID_DATE_FORMATS, true)) {
-            throw new \InvalidArgumentException(sprintf('The value of the time format can only be one of the following: %s (but "%s" was given).', implode(', ', DateTimeField::VALID_DATE_FORMATS), $timeFormat));
+            throw new \InvalidArgumentException(sprintf('When using a predefined format for the date, the time format must also be a predefined format (one of the following: %s) but "%s" was given.', implode(', ', DateTimeField::VALID_DATE_FORMATS), $timeFormat));
         }
 
         $this->dto->setDateTimePattern($dateFormatOrPattern, $timeFormat);
@@ -231,8 +232,22 @@ class Crud
         return $this;
     }
 
+    public function setThousandsSeparator(string $separator): self
+    {
+        $this->dto->setThousandsSeparator($separator);
+
+        return $this;
+    }
+
+    public function setDecimalSeparator(string $separator): self
+    {
+        $this->dto->setDecimalSeparator($separator);
+
+        return $this;
+    }
+
     /**
-     * @param $sortFieldsAndOrder ['fieldName' => 'ASC|DESC', ...]
+     * @param array $sortFieldsAndOrder ['fieldName' => 'ASC|DESC', ...]
      */
     public function setDefaultSort(array $sortFieldsAndOrder): self
     {
@@ -259,6 +274,17 @@ class Crud
         return $this;
     }
 
+    public function setSearchMode(string $searchMode): self
+    {
+        if (!\in_array($searchMode, [SearchMode::ANY_TERMS, SearchMode::ALL_TERMS], true)) {
+            throw new \InvalidArgumentException(sprintf('The search mode can be only "%s" or "%s", "%s" given.', SearchMode::ANY_TERMS, SearchMode::ALL_TERMS, $searchMode));
+        }
+
+        $this->dto->setSearchMode($searchMode);
+
+        return $this;
+    }
+
     public function setAutofocusSearch(bool $autofocusSearch = true): self
     {
         $this->dto->setAutofocusSearch($autofocusSearch);
@@ -273,7 +299,7 @@ class Crud
         return $this;
     }
 
-    public function setFilters(?array $filters): self
+    public function setFilters(?FilterConfigDto $filters): self
     {
         $this->dto->setFiltersConfig($filters);
 
@@ -355,7 +381,7 @@ class Crud
         return $this;
     }
 
-    public function setFormOptions(array $newFormOptions, array $editFormOptions = null): self
+    public function setFormOptions(array $newFormOptions, ?array $editFormOptions = null): self
     {
         $this->dto->setNewFormOptions(KeyValueStore::new($newFormOptions));
         $this->dto->setEditFormOptions(KeyValueStore::new($editFormOptions ?? $newFormOptions));
@@ -363,7 +389,7 @@ class Crud
         return $this;
     }
 
-    public function setEntityPermission(string $permission): self
+    public function setEntityPermission(string|Expression $permission): self
     {
         $this->dto->setEntityPermission($permission);
 
@@ -380,6 +406,13 @@ class Crud
     public function renderSidebarMinimized(bool $minimized = true): self
     {
         $this->dto->setSidebarWidth($minimized ? self::LAYOUT_SIDEBAR_COMPACT : self::LAYOUT_SIDEBAR_DEFAULT);
+
+        return $this;
+    }
+
+    public function hideNullValues(bool $hide = true): self
+    {
+        $this->dto->hideNullValues($hide);
 
         return $this;
     }
