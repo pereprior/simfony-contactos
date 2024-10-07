@@ -27,3 +27,13 @@ e0777e,127.0.0.1,GET,http://localhost:8000/job/add,1728125237,,200
 3f6cc4,127.0.0.1,POST,http://localhost:8000/job/update/4,1728125249,,302
 5e60a0,127.0.0.1,GET,http://localhost:8000/job/4,1728125249,,200
 cf4a16,127.0.0.1,GET,http://localhost:8000/job/delete/4,1728125256,,200
+a82067,127.0.0.1,GET,http://localhost:8000/,1728281684,,200
+766fd9,127.0.0.1,GET,http://localhost:8000/login,1728281700,6888fc,500
+6888fc,127.0.0.1,GET,http://localhost:8000/login,1728281700,,500
+abb6f5,127.0.0.1,GET,http://localhost:8000/login,1728281753,,200
+74a940,127.0.0.1,GET,http://localhost:8000/register,1728281830,,200
+745ba6,127.0.0.1,POST,http://localhost:8000/register,1728281843,,302
+340a2a,127.0.0.1,GET,http://localhost:8000/,1728281843,,200
+b410da,127.0.0.1,GET,http://localhost:8000/login,1728281862,,200
+043fe0,127.0.0.1,POST,http://localhost:8000/login,1728281871,,302
+55157b,127.0.0.1,GET,http://localhost:8000/,1728281871,,200
