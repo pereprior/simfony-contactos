@@ -105,9 +105,23 @@ class __TwigTemplate_2203d42dd4c85f12a5fb037fc1d5e094 extends Template
             // line 6
             yield Twig\Extension\CoreExtension::include($this->env, $context, "partials/user_data.html.twig", ["user" => (isset($context["user"]) || array_key_exists("user", $context) ? $context["user"] : (function () { throw new RuntimeError('Variable "user" does not exist.', 6, $this->source); })())]);
             yield "
+
+        <button onclick=\"location.href='";
+            // line 8
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("update_user_name", ["id" => CoreExtension::getAttribute($this->env, $this->source, (isset($context["user"]) || array_key_exists("user", $context) ? $context["user"] : (function () { throw new RuntimeError('Variable "user" does not exist.', 8, $this->source); })()), "id", [], "any", false, false, false, 8)]), "html", null, true);
+            yield "'\">Editar usuario</button>
+        <button onclick=\"location.href='";
+            // line 9
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("delete_user", ["id" => CoreExtension::getAttribute($this->env, $this->source, (isset($context["user"]) || array_key_exists("user", $context) ? $context["user"] : (function () { throw new RuntimeError('Variable "user" does not exist.', 9, $this->source); })()), "id", [], "any", false, false, false, 9)]), "html", null, true);
+            yield "'\">Eliminar usuario</button>
+        <button onclick=\"location.href='";
+            // line 10
+            yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_page_index");
+            yield "'\">Volver atras</button>
+
     ";
         } else {
-            // line 8
+            // line 13
             yield "        <p>No se ha encontrado el contacto</p>
     ";
         }
@@ -141,7 +155,7 @@ class __TwigTemplate_2203d42dd4c85f12a5fb037fc1d5e094 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  111 => 8,  106 => 6,  103 => 5,  100 => 4,  87 => 3,  64 => 2,  41 => 1,);
+        return array (  125 => 13,  119 => 10,  115 => 9,  111 => 8,  106 => 6,  103 => 5,  100 => 4,  87 => 3,  64 => 2,  41 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -152,6 +166,11 @@ class __TwigTemplate_2203d42dd4c85f12a5fb037fc1d5e094 extends Template
     {% if(user) %}
         <h1>Ficha del usuario</h1>
         {{ include('partials/user_data.html.twig', {'user': user}) }}
+
+        <button onclick=\"location.href='{{ path('update_user_name', {'id': user.id}) }}'\">Editar usuario</button>
+        <button onclick=\"location.href='{{ path('delete_user', {'id': user.id}) }}'\">Eliminar usuario</button>
+        <button onclick=\"location.href='{{ path('app_page_index') }}'\">Volver atras</button>
+
     {% else %}
         <p>No se ha encontrado el contacto</p>
     {% endif %}

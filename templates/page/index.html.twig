@@ -1,20 +1,36 @@
 {% extends 'page/base.html.twig' %}
 {% block title %}Users{% endblock %}
 {% block body %}
-    <div>
-        {% if app.user %}
-            {{ app.user.email }}
-            <a href="{{ path('app_logout') }}">Logout</a>
-        {% else %}
-            <a href="{{ path('login') }}">Login</a>
-            <a href="{{ path('app_register') }}">Register</a>
-        {% endif %}
-    </div>
-
-    <h1>Usuarios</h1>
-    <h2>Bienvenido a la web de usuarios.</h2>
+    <h1>Bienvenido a la web de usuarios.</h1>
+    <h2>Listado de usuarios</h2>
     {% if is_granted('ROLE_ADMIN') %}
         <p>ERES ADMIN, ENHORABUENA</p>
     {% endif %}
-    <p>Página de inicio</p>
+        {% for user in users %}
+            <ul>
+                <li>
+                    {% if app.user %}
+                        <a href="{{ path('user_info', {'id': user.id}) }}">{{ user.nombre }}</a>
+                        <ul>
+                            <li>{{ user.email }}</li>
+                            <li>
+                                <a href="{{ path('job_info', {'id': user.job.id}) }}">{{ user.job.nombre }}</a>
+                            </li>
+                        </ul>
+                    {% else %}
+                        {{ user.nombre }}
+                        <ul>
+                            <li>{{ user.email }}</li>
+                            <li>{{ user.job.nombre }}</li>
+                        </ul>
+                    {% endif %}
+                </li>
+            </ul>
+        {% endfor %}
+
+    {% if app.user %}
+        <button onclick="location.href='{{ path('add_new_user') }}'">Crear usuario</button>
+        <button onclick="location.href='{{ path('add_new_job') }}'">Crear puesto de trabajo</button>
+    {% endif %}
+
 {% endblock %}

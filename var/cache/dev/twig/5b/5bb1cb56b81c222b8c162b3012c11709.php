@@ -70,10 +70,36 @@ class __TwigTemplate_9f25c05d5c12dcd3bb696efc4cb7ece7 extends Template
         // line 17
         yield "</head>
 <body>
-";
-        // line 19
-        yield from $this->unwrap()->yieldBlock('body', $context, $blocks);
+<div>
+    ";
         // line 20
+        if (CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 20, $this->source); })()), "user", [], "any", false, false, false, 20)) {
+            // line 21
+            yield "        ";
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 21, $this->source); })()), "user", [], "any", false, false, false, 21), "email", [], "any", false, false, false, 21), "html", null, true);
+            yield "
+        <a href=\"";
+            // line 22
+            yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_logout");
+            yield "\">Logout</a>
+    ";
+        } else {
+            // line 24
+            yield "        <a href=\"";
+            yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("login");
+            yield "\">Login</a>
+        <a href=\"";
+            // line 25
+            yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_register");
+            yield "\">Register</a>
+    ";
+        }
+        // line 27
+        yield "</div>
+";
+        // line 28
+        yield from $this->unwrap()->yieldBlock('body', $context, $blocks);
+        // line 31
         yield "</body>
 </html>";
         
@@ -165,7 +191,7 @@ class __TwigTemplate_9f25c05d5c12dcd3bb696efc4cb7ece7 extends Template
         yield from [];
     }
 
-    // line 19
+    // line 28
     /**
      * @return iterable<null|scalar|\Stringable>
      */
@@ -178,6 +204,9 @@ class __TwigTemplate_9f25c05d5c12dcd3bb696efc4cb7ece7 extends Template
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "body"));
 
+        // line 29
+        yield "
+";
         
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
 
@@ -198,9 +227,17 @@ class __TwigTemplate_9f25c05d5c12dcd3bb696efc4cb7ece7 extends Template
     /**
      * @codeCoverageIgnore
      */
+    public function isTraitable(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
     public function getDebugInfo(): array
     {
-        return array (  169 => 19,  154 => 14,  141 => 13,  128 => 10,  125 => 9,  112 => 8,  89 => 5,  77 => 20,  75 => 19,  71 => 17,  69 => 13,  66 => 12,  63 => 8,  58 => 5,  52 => 1,);
+        return array (  208 => 29,  195 => 28,  180 => 14,  167 => 13,  154 => 10,  151 => 9,  138 => 8,  115 => 5,  103 => 31,  101 => 28,  98 => 27,  93 => 25,  88 => 24,  83 => 22,  78 => 21,  76 => 20,  71 => 17,  69 => 13,  66 => 12,  63 => 8,  58 => 5,  52 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -223,7 +260,18 @@ class __TwigTemplate_9f25c05d5c12dcd3bb696efc4cb7ece7 extends Template
     {% endblock %}
 </head>
 <body>
-{% block body %}{% endblock %}
+<div>
+    {% if app.user %}
+        {{ app.user.email }}
+        <a href=\"{{ path('app_logout') }}\">Logout</a>
+    {% else %}
+        <a href=\"{{ path('login') }}\">Login</a>
+        <a href=\"{{ path('app_register') }}\">Register</a>
+    {% endif %}
+</div>
+{% block body %}
+
+{% endblock %}
 </body>
 </html>", "page/base.html.twig", "/home/pprior/PhpstormProjects/simfony-usuarios/templates/page/base.html.twig");
     }

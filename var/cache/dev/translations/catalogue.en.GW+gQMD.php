@@ -164,7 +164,7 @@ $catalogue = new MessageCatalogue('en', array (
   'EasyAdminBundle' => 
   array (
     'page_title.dashboard' => 'Dashboard',
-    'page_title.detail' => '%entity_as_string%',
+    'page_title.detail' => '%entity_label_singular% <small>(#%entity_short_id%)</small>',
     'page_title.edit' => 'Edit %entity_label_singular%',
     'page_title.index' => '%entity_label_plural%',
     'page_title.new' => 'Create %entity_label_singular%',

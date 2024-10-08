@@ -105,9 +105,23 @@ class __TwigTemplate_a1a7da45bd721422937f4380117dec06 extends Template
             // line 6
             yield Twig\Extension\CoreExtension::include($this->env, $context, "partials/job_data.html.twig", ["job" => (isset($context["job"]) || array_key_exists("job", $context) ? $context["job"] : (function () { throw new RuntimeError('Variable "job" does not exist.', 6, $this->source); })())]);
             yield "
+
+        <button onclick=\"location.href='";
+            // line 8
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("update_job_name", ["id" => CoreExtension::getAttribute($this->env, $this->source, (isset($context["job"]) || array_key_exists("job", $context) ? $context["job"] : (function () { throw new RuntimeError('Variable "job" does not exist.', 8, $this->source); })()), "id", [], "any", false, false, false, 8)]), "html", null, true);
+            yield "'\">Editar trabajo</button>
+        <button onclick=\"location.href='";
+            // line 9
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("delete_job", ["id" => CoreExtension::getAttribute($this->env, $this->source, (isset($context["job"]) || array_key_exists("job", $context) ? $context["job"] : (function () { throw new RuntimeError('Variable "job" does not exist.', 9, $this->source); })()), "id", [], "any", false, false, false, 9)]), "html", null, true);
+            yield "'\">Eliminar trabajo</button>
+        <button onclick=\"location.href='";
+            // line 10
+            yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_page_index");
+            yield "'\">Volver atras</button>
+
     ";
         } else {
-            // line 8
+            // line 13
             yield "        <p>No se ha encontrado el puesto de trabajo</p>
     ";
         }
@@ -141,7 +155,7 @@ class __TwigTemplate_a1a7da45bd721422937f4380117dec06 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  111 => 8,  106 => 6,  103 => 5,  100 => 4,  87 => 3,  64 => 2,  41 => 1,);
+        return array (  125 => 13,  119 => 10,  115 => 9,  111 => 8,  106 => 6,  103 => 5,  100 => 4,  87 => 3,  64 => 2,  41 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -152,6 +166,11 @@ class __TwigTemplate_a1a7da45bd721422937f4380117dec06 extends Template
     {% if(job) %}
         <h1>Ficha del puesto de trabajo</h1>
         {{ include('partials/job_data.html.twig', {'job': job}) }}
+
+        <button onclick=\"location.href='{{ path('update_job_name', {'id': job.id}) }}'\">Editar trabajo</button>
+        <button onclick=\"location.href='{{ path('delete_job', {'id': job.id}) }}'\">Eliminar trabajo</button>
+        <button onclick=\"location.href='{{ path('app_page_index') }}'\">Volver atras</button>
+
     {% else %}
         <p>No se ha encontrado el puesto de trabajo</p>
     {% endif %}

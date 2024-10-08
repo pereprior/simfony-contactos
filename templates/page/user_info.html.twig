@@ -4,6 +4,11 @@
     {% if(user) %}
         <h1>Ficha del usuario</h1>
         {{ include('partials/user_data.html.twig', {'user': user}) }}
+
+        <button onclick="location.href='{{ path('update_user_name', {'id': user.id}) }}'">Editar usuario</button>
+        <button onclick="location.href='{{ path('delete_user', {'id': user.id}) }}'">Eliminar usuario</button>
+        <button onclick="location.href='{{ path('app_page_index') }}'">Volver atras</button>
+
     {% else %}
         <p>No se ha encontrado el contacto</p>
     {% endif %}

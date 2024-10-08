@@ -28,7 +28,7 @@ class UserController extends AbstractController
     #[Route('/', name: 'app_page_index')]
     public function index(): Response
     {
-        return $this->render("page/index.html.twig");
+        return $this->render("page/index.html.twig", ["users" => $this->repository->findAll()]);
     }
 
     // Si no ponemos nada, sale 1 por defecto
@@ -73,13 +73,9 @@ class UserController extends AbstractController
         $user = $this->repository->find($id);
 
         if ($user) {
-            try {
-                $this->entityManager->remove($user);
-                $this->entityManager->flush();
-                return new Response("Usuario eliminado");
-            } catch (Exception) {
-                return new Response("Error al eliminar el usuario");
-            }
+            $this->entityManager->remove($user);
+            $this->entityManager->flush();
+            return $this->render("page/index.html.twig");
         } else return $this->render("page/user_info.html.twig", ["user" => $user]);
     }
 
